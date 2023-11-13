@@ -28,6 +28,6 @@ if (!function_exists("VerifyGoogleToken")) {
 
         if ($response->status() != 200) return false;
 
-        return $response->body();
+        return json_decode($response->body());
     }
 }
