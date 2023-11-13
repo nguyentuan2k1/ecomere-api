@@ -21,8 +21,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post("login", [UserController::class, "login"]);
 Route::post("register", [UserController::class, "register"]);
+Route::post("forgot-password", [UserController::class, "forgotPassword"]);
 
 Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
     Route::get("info", [UserController::class, 'info']);
     Route::get("logout", [UserController::class, "logout"]);
+    Route::post("update-password", [UserController::class, "updatePassword"]);
 });

@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Enums\FileStorageDirectory;
+use App\Enums\GeneralDefine;
 use App\Enums\UserAvatar;
+use App\Enums\UserDefine;
 use App\Http\Controllers\BaseController;
 use App\Service\User\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Mockery\Exception;
 
 class UserController extends BaseController
@@ -27,7 +31,7 @@ class UserController extends BaseController
         try {
             $validator = Validator::make($request->all(), [
                 "email"     => ["required", "email:filter"],
-                "password"  => ["required", "min:6", "max:20"],
+                "password"  => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:". UserDefine::MAX_PASSWORD],
             ], [
                 "*.required" => "This field is required",
                 "*.*"        => "This field is invalid"
@@ -85,35 +89,33 @@ class UserController extends BaseController
     public function register(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                "email"     => ["required", "email:filter", "unique:users,email"],
-                "password"  => ["required", "min:6", "max:20"],
-                "full_name" => ["required", "min:2", "max:100"],
-            ], [
-                "*.required" => "This field is required",
-                "*.*"        => "This field is invalid"
-            ]);
+            if ($request->get("register_type") == "google") {
 
-            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+            } else {
+                $validator = Validator::make($request->all(), [
+                    "email"     => ["required", "max:" . GeneralDefine::MAX_LENGTH, "email:filter", "unique:users,email"],
+                    "password"  => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:". UserDefine::MAX_PASSWORD],
+                    "full_name" => ["required", "min:2", "max:" . GeneralDefine::MAX_LENGTH],
+                ], [
+                    "*.required" => "This field is required",
+                    "*.*"        => "This field is invalid"
+                ]);
 
-            $data = [
-                "email"      => $request->get("email"),
-                "full_name"  => $request->get("full_name"),
-                "password"   => \Illuminate\Support\Facades\Hash::make($request->get("password")),
-                "type"       => "password"
-            ];
+                if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
 
-            $user = $this->userService->create($data);
+                $data = [
+                    "email"     => $request->get("email"),
+                    "full_name" => $request->get("full_name"),
+                    "password"  => Hash::make($request->get("password")),
+                    "type"      => "password"
+                ];
 
-            if (empty($user)) return $this->sendError("Create user failed", 400);
+                $user = $this->userService->create($data);
 
-            $userToken = $user->createToken("personal access token");
+                if (empty($user)) return $this->sendError("Create user failed", 400);
 
-            $data = [
-                "access_token" => $userToken->accessToken,
-                'token_type'   => 'Bearer',
-                'expires_at'   => Carbon::parse($userToken->token->expires_at)->timestamp
-            ];
+                $this->userService->sendVerifyEmail($user);
+            }
 
             return $this->sendResponse($data);
         } catch (\Exception $exception) {
@@ -137,6 +139,90 @@ class UserController extends BaseController
             Log::error($exception->getMessage());
 
             return $this->sendError($exception->getMessage(), 500);
+        }
+    }
+
+    // Chưa xong
+    public function forgotPassword(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                "email"     => ["required", "email:filter", "max:" . GeneralDefine::MAX_LENGTH],
+            ], [
+                "*.required" => "This field is required",
+                "*.*"        => "This field is invalid"
+            ]);
+
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            $user = $this->userService->getUserByEmail($request->get("email"));
+
+            if (empty($user)) return $this->sendError("Email is invalid", 400);
+
+            $token     = Str::random("30");
+            $resetLink = env("APP_URL");
+            $resetLink =  "{$resetLink}/forgot-password/token?={$token}";
+            $this->userService->sendEmailForgotPassword($user, $token, $resetLink);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return false;
+        }
+    }
+
+    public function updateInfo(Request $request)
+    {
+        try {
+            $user = auth()->guard('api')->user();
+
+            if (empty($user)) return $this->sendError("Please Login Again", 401);
+
+            $validator = Validator::make($request->all(), [
+                "full_name" => ["required", "max:" . GeneralDefine::MAX_LENGTH],
+            ], [
+                "*.required" => "This field is required",
+                "*.*"        => "This field is invalid"
+            ]);
+
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return false;
+        }
+    }
+
+    public function updatePassword(Request $request)
+    {
+        try {
+            $user = auth()->guard('api')->user();
+
+            if (empty($user)) return $this->sendError("Please Login Again", 401);
+
+            $validator = Validator::make($request->all(), [
+                "old_password" => ["required"],
+                "new_password" => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:" . UserDefine::MAX_PASSWORD],
+            ], [
+                "*.required" => "This field is required",
+            ]);
+
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            if (!Hash::check($request->get("old_password"), $user->password))
+                return $this->sendValidator(["old_password" => "old password is not incorrect"]);
+
+            $data = [
+                "password" => Hash::make($request->get("new_password")),
+            ];
+
+            $update = $this->userService->updateInfoById($data, $user->id);
+
+            if (empty($update)) return $this->sendError("Update Failed");
+
+            return $this->sendResponse([], "Update Successfully");
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return false;
         }
     }
 }
