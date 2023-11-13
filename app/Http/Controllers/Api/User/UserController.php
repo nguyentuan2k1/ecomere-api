@@ -90,11 +90,48 @@ class UserController extends BaseController
     {
         try {
             if ($request->get("register_type") == "google") {
+                $validator = Validator::make($request->all(), [
+                    "token" => ["required"]
+                ], [
+                    "*.required" => "This field is required",
+                    "*.*"        => "This field is invalid"
+                ]);
 
+                if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+                $verifyGoogleData = VerifyGoogleToken($request->get("token"));
+
+                if (empty($verifyGoogleData)) return $this->sendValidator(["token" => "Token is invalid"]);
+
+                $user = $this->userService->getUserByEmail($verifyGoogleData->email);
+
+                if (empty($user)) {
+                    $data = [
+                        "email"     => $verifyGoogleData->email,
+                        "full_name" => $verifyGoogleData->name,
+                        "password"  => Hash::make(Str::random("12")),
+                        "type"      => "google",
+                        "avatar"    => $verifyGoogleData->picture
+                    ];
+
+                    $user = $this->userService->create($data);
+
+                    if (empty($user)) return $this->sendError("Create user failed", 400);
+                }
+
+                $userToken = $user->createToken("personal access token");
+
+                $data = [
+                    "access_token" => $userToken->accessToken,
+                    'token_type'   => 'Bearer',
+                    'expires_at'   => Carbon::parse($userToken->token->expires_at)->timestamp
+                ];
+
+                return $this->sendResponse($data, "Create Account Successfully !");
             } else {
                 $validator = Validator::make($request->all(), [
                     "email"     => ["required", "max:" . GeneralDefine::MAX_LENGTH, "email:filter", "unique:users,email"],
-                    "password"  => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:". UserDefine::MAX_PASSWORD],
+                    "password"  => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:" . UserDefine::MAX_PASSWORD],
                     "full_name" => ["required", "min:2", "max:" . GeneralDefine::MAX_LENGTH],
                 ], [
                     "*.required" => "This field is required",
@@ -109,15 +146,15 @@ class UserController extends BaseController
                     "password"  => Hash::make($request->get("password")),
                     "type"      => "password"
                 ];
-
-                $user = $this->userService->create($data);
-
-                if (empty($user)) return $this->sendError("Create user failed", 400);
-
-                $this->userService->sendVerifyEmail($user);
             }
 
-            return $this->sendResponse($data);
+            $user = $this->userService->create($data);
+
+            if (empty($user)) return $this->sendError("Create user failed", 400);
+
+            $this->userService->sendVerifyEmail($user);
+
+            return $this->sendResponse([], "Create Account Successfully ! Please check email verify");
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 
