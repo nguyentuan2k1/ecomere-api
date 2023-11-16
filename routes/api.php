@@ -25,6 +25,8 @@ Route::post("forgot-password", [UserController::class, "forgotPassword"]);
 
 Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
     Route::get("info", [UserController::class, 'info']);
+    Route::post("update-info", [UserController::class, 'updateInfo']);
     Route::get("logout", [UserController::class, "logout"]);
     Route::post("update-password", [UserController::class, "updatePassword"]);
+    Route::post("update-avatar", [UserController::class, 'updateAvatar']);
 });

@@ -7,12 +7,18 @@ use App\Enums\GeneralDefine;
 use App\Enums\UserAvatar;
 use App\Enums\UserDefine;
 use App\Http\Controllers\BaseController;
+use App\Mail\SendVerifyEmail;
+use App\Service\PasswordReset\PasswordResetService;
+use App\Service\UploadFile\UploadFileService;
 use App\Service\User\UserService;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Mockery\Exception;
@@ -20,10 +26,14 @@ use Mockery\Exception;
 class UserController extends BaseController
 {
     public $userService;
+    public $uploadFileService;
+    public $passwordResetService;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, UploadFileService $uploadFileService, PasswordResetService $passwordResetService)
     {
-        $this->userService = $userService;
+        $this->userService          = $userService;
+        $this->uploadFileService    = $uploadFileService;
+        $this->passwordResetService = $passwordResetService;
     }
 
     public function login(Request $request)
@@ -70,7 +80,9 @@ class UserController extends BaseController
 
             if (empty($user)) return $this->sendError("user data error", 401);
 
-            $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(FileStorageDirectory::USER_AVATAR . "/" . UserAvatar::UserAvatarDefault)  ;
+            if (!filter_var($user->avatar, FILTER_VALIDATE_URL)) {
+                $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(FileStorageDirectory::USER_AVATAR . "/" . UserAvatar::UserAvatarDefault)  ;
+            }
 
             $user = $user->only([
                 "full_name",
@@ -179,7 +191,6 @@ class UserController extends BaseController
         }
     }
 
-    // Chưa xong
     public function forgotPassword(Request $request)
     {
         try {
@@ -194,12 +205,23 @@ class UserController extends BaseController
 
             $user = $this->userService->getUserByEmail($request->get("email"));
 
-            if (empty($user)) return $this->sendError("Email is invalid", 400);
+            if (empty($user)) return $this->sendError("Email is not exist", 400);
 
-            $token     = Str::random("30");
+            $token = Str::random("30");
+            Mail::to("tteo@gmail.com")->send(new SendVerifyEmail("asdas", "aaaaa"));
+
+
+            $this->passwordResetService->deleteAllToken($user->email);
+
+            $passwordReset = $this->passwordResetService->create($user->email, $token);
+
+            if (empty($passwordReset)) return $this->sendError("Can not create reset password", 400);
+
             $resetLink = env("APP_URL");
-            $resetLink =  "{$resetLink}/forgot-password/token?={$token}";
+            $resetLink = "{$resetLink}/forgot-password/token?={$token}";
+
             $this->userService->sendEmailForgotPassword($user, $token, $resetLink);
+
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
@@ -216,11 +238,22 @@ class UserController extends BaseController
 
             $validator = Validator::make($request->all(), [
                 "full_name" => ["required", "max:" . GeneralDefine::MAX_LENGTH],
+                "avatar"    => ["nullable", "url"],
             ], [
                 "*.required" => "This field is required",
                 "*.*"        => "This field is invalid"
             ]);
 
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            $dataUpdate = [
+                "full_name" => $request->get("full_name"),
+                "avatar"    => $request->get("avatar"),
+            ];
+
+            $update = $this->userService->updateInfoById($dataUpdate, $user->id);
+
+            return $this->sendResponse($update, "Update user Success");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
@@ -256,6 +289,48 @@ class UserController extends BaseController
             if (empty($update)) return $this->sendError("Update Failed");
 
             return $this->sendResponse([], "Update Successfully");
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return false;
+        }
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        try {
+            $user = auth()->guard('api')->user();
+
+            if (empty($user)) return $this->sendError("Please Login Again", 401);
+
+            $validator = Validator::make($request->all(), [
+                "avatar" => ["required", 'file']
+            ], [
+                "*.required" => "This field is required",
+                "*.*"        => "This field is invalid"
+            ]);
+
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            $avatar          = $request->file("avatar");
+            $typeFileAccepts = ["jpg", "png", "jpeg", "svg"];
+
+            if (!in_array($avatar->getClientOriginalExtension(), $typeFileAccepts)) return $this->sendValidator(["avatar" => "File type is invalid"]);
+
+            if ($avatar->getSize() > 10 * 1024 * 1024) return $this->sendValidator(["avatar" => "File size is invalid"]);
+
+            $file = $avatar->getClientOriginalName();
+
+            $filename  = pathinfo($file, PATHINFO_FILENAME);
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+            $filename  = vietnameseToLatin($filename) . "-" . time() . "." . $extension;
+            $filePath  = $this->uploadFileService->uploadFile($avatar, $filename, "public/avatar");
+
+            if (empty($filePath)) return $this->sendError("Can not upload your avatar", 400);
+
+            if (!filter_var($filePath, FILTER_VALIDATE_URL)) $filePath = getUrlStorageFile($filePath);
+
+            return $filePath;
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 

@@ -4,6 +4,7 @@ namespace App\Service\User;
 
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class UserService
 {

@@ -30,7 +30,7 @@
 <div class="verification-container">
     <h2>Email Verification</h2>
     <p>Thank you for registering. Please use the following verification code to complete your registration:</p>
-    <a href=""><button> Verify Account </button></a>
+    <a href="{{$resetLink}}"><button> Verify Account </button></a>
     <p>If you didn't request this verification, you can ignore this email.</p>
 </div>
 

@@ -14,15 +14,17 @@ class SendVerifyEmail extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
+    public $resetLink;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct($user, $resetLink)
     {
-        $this->user = $user;
+        $this->user      = $user;
+        $this->resetLink = $resetLink;
     }
 
     /**
