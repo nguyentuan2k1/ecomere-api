@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 if (!function_exists("getUrlStorage")) {
     function getUrlStorageFile($file) {
@@ -89,5 +90,38 @@ if (!function_exists("vietnameseToLatin")) {
         $string = preg_replace("/[^\x9\xA\xD\x20-\x7F]/u", "", $string);
 
         return $string;
+    }
+}
+
+if (!function_exists("makeShortUrl")) {
+    function makeShortUrl($fullUrl)
+    {
+        try {
+            $client     = New GuzzleHttp\Client();
+            $apiShorter = 'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=' . config('generate.fire_base_web_api_key');
+
+            $data = $client->post($apiShorter, [
+                'headers' => [
+                    'Content-Type' => 'application/json'
+                ],
+                'json' => [
+                    'dynamicLinkInfo' => [
+                        'dynamicLinkDomain' => 'examplefiver.page.link',
+                        'link' => $fullUrl
+                    ],
+                    'suffix' => [
+                        'option' => 'SHORT'
+                    ]
+                ]
+            ]);
+
+            $data = $data->getBody()->getContents();
+
+            return json_decode($data)->shortLink;
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return false;
+        }
     }
 }

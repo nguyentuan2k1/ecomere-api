@@ -41,7 +41,7 @@ class UserController extends BaseController
         try {
             $validator = Validator::make($request->all(), [
                 "email"     => ["required", "email:filter"],
-                "password"  => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:". UserDefine::MAX_PASSWORD],
+                "password"  => ["required"],
             ], [
                 "*.required" => "This field is required",
                 "*.*"        => "This field is invalid"
@@ -80,9 +80,8 @@ class UserController extends BaseController
 
             if (empty($user)) return $this->sendError("user data error", 401);
 
-            if (!filter_var($user->avatar, FILTER_VALIDATE_URL)) {
-                $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(FileStorageDirectory::USER_AVATAR . "/" . UserAvatar::UserAvatarDefault)  ;
-            }
+            if (!filter_var($user->avatar, FILTER_VALIDATE_URL))
+//                $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(config("generate.user.user") . "/" . UserAvatar::UserAvatarDefault)  ;
 
             $user = $user->only([
                 "full_name",
@@ -98,18 +97,25 @@ class UserController extends BaseController
         }
     }
 
-    public function register(Request $request)
+    public function registerBySocial(Request $request)
     {
-        try {
-            if ($request->get("register_type") == "google") {
-                $validator = Validator::make($request->all(), [
-                    "token" => ["required"]
-                ], [
-                    "*.required" => "This field is required",
-                    "*.*"        => "This field is invalid"
-                ]);
+        $validator = Validator::make($request->all(), [
+            "register_type" => ["required"]
+        ], [
+            "register_type.required" => "Register Type is required",
+        ]);
 
-                if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+        if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+        $registerTypeAccepts = array_values(config("generate.social_accepts"));
+
+        if (in_array($request->get("register_type"), $registerTypeAccepts)) {
+            if ($request->get("register_type") == config("generate.social_accepts.google")) {
+                if (empty($request->get("token"))
+                    || strlen(trim($request->get("token") <= 0))
+                ) {
+                    return $this->sendValidator(["token" => "Token is required"]);
+                }
 
                 $verifyGoogleData = VerifyGoogleToken($request->get("token"));
 
@@ -119,11 +125,12 @@ class UserController extends BaseController
 
                 if (empty($user)) {
                     $data = [
-                        "email"     => $verifyGoogleData->email,
-                        "full_name" => $verifyGoogleData->name,
-                        "password"  => Hash::make(Str::random("12")),
-                        "type"      => "google",
-                        "avatar"    => $verifyGoogleData->picture
+                        "email"             => $verifyGoogleData->email,
+                        "full_name"         => $verifyGoogleData->name,
+                        "password"          => Hash::make(Str::random("12")),
+                        "type"              => $request->get("register_type"),
+                        "avatar"            => $verifyGoogleData->picture,
+                        "email_verified_at" => time(),
                     ];
 
                     $user = $this->userService->create($data);
@@ -133,38 +140,68 @@ class UserController extends BaseController
 
                 $userToken = $user->createToken("personal access token");
 
+                $user = $user->only([
+                    "full_name",
+                    "email",
+                    "avatar"
+                ]);
+
                 $data = [
+                    "user_info"    => $user,
                     "access_token" => $userToken->accessToken,
                     'token_type'   => 'Bearer',
                     'expires_at'   => Carbon::parse($userToken->token->expires_at)->timestamp
                 ];
 
                 return $this->sendResponse($data, "Create Account Successfully !");
-            } else {
-                $validator = Validator::make($request->all(), [
-                    "email"     => ["required", "max:" . GeneralDefine::MAX_LENGTH, "email:filter", "unique:users,email"],
-                    "password"  => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:" . UserDefine::MAX_PASSWORD],
-                    "full_name" => ["required", "min:2", "max:" . GeneralDefine::MAX_LENGTH],
-                ], [
-                    "*.required" => "This field is required",
-                    "*.*"        => "This field is invalid"
-                ]);
-
-                if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
-
-                $data = [
-                    "email"     => $request->get("email"),
-                    "full_name" => $request->get("full_name"),
-                    "password"  => Hash::make($request->get("password")),
-                    "type"      => "password"
-                ];
             }
+        }
+
+        return $this->sendError("Register type is not support", 400);
+    }
+
+    // Chưa xong
+    public function register(Request $request)
+    {
+        $link = makeShortUrl("https://ecomereapps.lol");
+        try {
+            $validator = Validator::make($request->all(), [
+//                "email"     => ["required", "max:" . config("generate.max_length"), "email:filter", "unique:users,email"],
+                "email"     => ["required", "max:" . config("generate.max_length"), "email:filter"],
+                "password"  => ["required", "min:" . config("generate.user.password.min"), "max:" . config("generate.user.password.max")],
+                "full_name" => ["required", "min:2", "max:" . config("generate.max_length")],
+            ], [
+                "email.required"     => "Email is required",
+                "password.required"  => "Password is required",
+                "full_name.required" => "Full Name is required",
+                "full_name.min"      => "Full Name is required",
+                "full_name.max"      => "Full Name only accept " . config("generate.max_length") . " character",
+                "email.max"          => "Email only accept" . config("generate.max_length") . "character",
+                "email.email"        => "Email is invalid",
+                "email.unique"       => "Email is duplicate with another user",
+                "password.min"       => "Password must be ". config("generate.user.password.min") ." character",
+                "password.max"       => "Password only accept ". config("generate.user.password.max") ." character",
+            ]);
+
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            $data = [
+                "email"       => $request->get("email"),
+                "full_name"   => $request->get("full_name"),
+                "password"    => Hash::make($request->get("password")),
+                "type"        => "password",
+                "verify_code" => Str::random(30)
+            ];
 
             $user = $this->userService->create($data);
 
             if (empty($user)) return $this->sendError("Create user failed", 400);
 
-            $this->userService->sendVerifyEmail($user);
+
+
+            $mail = $this->userService->sendVerifyEmail($user);
+
+            if (empty($mail)) return $this->sendError("Create Account Successfully ! But Have Error with send mail ! We will connect you another time", 500);
 
             return $this->sendResponse([], "Create Account Successfully ! Please check email verify");
         } catch (\Exception $exception) {
@@ -195,7 +232,7 @@ class UserController extends BaseController
     {
         try {
             $validator = Validator::make($request->all(), [
-                "email"     => ["required", "email:filter", "max:" . GeneralDefine::MAX_LENGTH],
+                "email"     => ["required", "email:filter", "max:" . config("generate.max_length")],
             ], [
                 "*.required" => "This field is required",
                 "*.*"        => "This field is invalid"
@@ -208,8 +245,7 @@ class UserController extends BaseController
             if (empty($user)) return $this->sendError("Email is not exist", 400);
 
             $token = Str::random("30");
-            Mail::to("tteo@gmail.com")->send(new SendVerifyEmail("asdas", "aaaaa"));
-
+//            Mail::to("tteo@gmail.com")->send(new SendVerifyEmail("asdas", "aaaaa"));
 
             $this->passwordResetService->deleteAllToken($user->email);
 
@@ -237,7 +273,7 @@ class UserController extends BaseController
             if (empty($user)) return $this->sendError("Please Login Again", 401);
 
             $validator = Validator::make($request->all(), [
-                "full_name" => ["required", "max:" . GeneralDefine::MAX_LENGTH],
+                "full_name" => ["required", "max:" . config("generate.max_length")],
                 "avatar"    => ["nullable", "url"],
             ], [
                 "*.required" => "This field is required",

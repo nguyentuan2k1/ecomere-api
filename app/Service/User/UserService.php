@@ -2,6 +2,7 @@
 
 namespace App\Service\User;
 
+use App\Mail\SendVerifyEmail;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -49,7 +50,19 @@ class UserService
 
     public function sendVerifyEmail($user)
     {
+        try {
+            if (empty($user)) return false;
 
+            $mailView = new SendVerifyEmail($user, "abc");
+
+            $mailSend = Mail::to($user->email)->send($mailView);
+
+            return $mailSend;
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return false;
+        }
     }
 
     public function updateInfoById($data, $user_id)
