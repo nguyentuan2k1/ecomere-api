@@ -306,7 +306,7 @@ class UserController extends BaseController
 
             $validator = Validator::make($request->all(), [
                 "old_password" => ["required"],
-                "new_password" => ["required", "min:" . UserDefine::MIN_PASSWORD, "max:" . UserDefine::MAX_PASSWORD],
+                "new_password" => ["required", "min:" . config("generate.user.password.min"), "max:" . config("generate.user.password.max")],
             ], [
                 "*.required" => "This field is required",
             ]);
