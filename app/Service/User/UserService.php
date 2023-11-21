@@ -53,9 +53,10 @@ class UserService
         try {
             if (empty($user)) return false;
 
-            $mailView = new SendVerifyEmail($user, "abc");
-
-            $mailSend = Mail::to($user->email)->send($mailView);
+            $fullUrl   = env("URL_APP");
+            $shortLink = makeShortUrl("{$fullUrl}?screen=/verifyEmail&verifyCode={$user->verify_code}");
+            $mailView  = new SendVerifyEmail($user, $shortLink);
+            $mailSend  = Mail::to($user->email)->send($mailView);
 
             return $mailSend;
         } catch (\Exception $exception) {

@@ -106,7 +106,7 @@ if (!function_exists("makeShortUrl")) {
                 ],
                 'json' => [
                     'dynamicLinkInfo' => [
-                        'dynamicLinkDomain' => 'examplefiver.page.link',
+                        'dynamicLinkDomain' => env("DOMAIN_URI_PREFIX"),
                         'link' => $fullUrl
                     ],
                     'suffix' => [

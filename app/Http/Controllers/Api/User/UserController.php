@@ -2,23 +2,15 @@
 
 namespace App\Http\Controllers\Api\User;
 
-use App\Enums\FileStorageDirectory;
-use App\Enums\GeneralDefine;
-use App\Enums\UserAvatar;
-use App\Enums\UserDefine;
 use App\Http\Controllers\BaseController;
-use App\Mail\SendVerifyEmail;
 use App\Service\PasswordReset\PasswordResetService;
 use App\Service\UploadFile\UploadFileService;
 use App\Service\User\UserService;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Mockery\Exception;
@@ -29,8 +21,11 @@ class UserController extends BaseController
     public $uploadFileService;
     public $passwordResetService;
 
-    public function __construct(UserService $userService, UploadFileService $uploadFileService, PasswordResetService $passwordResetService)
-    {
+    public function __construct(
+        UserService $userService,
+        UploadFileService $uploadFileService,
+        PasswordResetService $passwordResetService
+    ) {
         $this->userService          = $userService;
         $this->uploadFileService    = $uploadFileService;
         $this->passwordResetService = $passwordResetService;
@@ -56,7 +51,17 @@ class UserController extends BaseController
 
                 $userToken = $user->createToken("personal access token");
 
+                if (!filter_var($user->avatar, FILTER_VALIDATE_URL))
+                    $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(config("generate.file_storage_directory.avatar") . "/" .  config("generate.user.avatar.default"));
+
+                $user = $user->only([
+                    "full_name",
+                    "email",
+                    "avatar"
+                ]);
+
                 $data = [
+                    "user_info"    => $user,
                     "access_token" => $userToken->accessToken,
                     'token_type'   => 'Bearer',
                     'expires_at'   => Carbon::parse($userToken->token->expires_at)->timestamp
@@ -81,7 +86,7 @@ class UserController extends BaseController
             if (empty($user)) return $this->sendError("user data error", 401);
 
             if (!filter_var($user->avatar, FILTER_VALIDATE_URL))
-//                $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(config("generate.user.user") . "/" . UserAvatar::UserAvatarDefault)  ;
+                $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(config("generate.file_storage_directory.avatar") . "/" .  config("generate.user.avatar.default"));
 
             $user = $user->only([
                 "full_name",
@@ -89,7 +94,7 @@ class UserController extends BaseController
                 "avatar"
             ]);
 
-            return $this->sendResponse($user);
+            return $this->sendResponse(["user_info" => $user]);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 
@@ -160,14 +165,11 @@ class UserController extends BaseController
         return $this->sendError("Register type is not support", 400);
     }
 
-    // Chưa xong
     public function register(Request $request)
     {
-        $link = makeShortUrl("https://ecomereapps.lol");
         try {
             $validator = Validator::make($request->all(), [
-//                "email"     => ["required", "max:" . config("generate.max_length"), "email:filter", "unique:users,email"],
-                "email"     => ["required", "max:" . config("generate.max_length"), "email:filter"],
+                "email"     => ["required", "max:" . config("generate.max_length"), "email:filter", "unique:users,email"],
                 "password"  => ["required", "min:" . config("generate.user.password.min"), "max:" . config("generate.user.password.max")],
                 "full_name" => ["required", "min:2", "max:" . config("generate.max_length")],
             ], [
@@ -197,11 +199,9 @@ class UserController extends BaseController
 
             if (empty($user)) return $this->sendError("Create user failed", 400);
 
-
-
             $mail = $this->userService->sendVerifyEmail($user);
 
-            if (empty($mail)) return $this->sendError("Create Account Successfully ! But Have Error with send mail ! We will connect you another time", 500);
+            if (empty($mail)) return $this->sendError("Create Account Successfully ! But Have A problem with email . Please Contact Admin", 500);
 
             return $this->sendResponse([], "Create Account Successfully ! Please check email verify");
         } catch (\Exception $exception) {
