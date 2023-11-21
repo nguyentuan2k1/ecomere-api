@@ -53,8 +53,8 @@ class UserService
         try {
             if (empty($user)) return false;
 
-            $fullUrl   = env("URL_APP");
-            $shortLink = makeShortUrl("{$fullUrl}?screen=/verifyEmail&verifyCode={$user->verify_code}");
+//            $fullUrl   = env("URL_APP");
+            $shortLink = makeShortUrl("https://examplefiver2.page.link/?link=https://examplefiver2.page.link/verify-email?verifyCode={$user->verify_code}&apn=com.example.fiver.dev");
             $mailView  = new SendVerifyEmail($user, $shortLink);
             $mailSend  = Mail::to($user->email)->send($mailView);
 
