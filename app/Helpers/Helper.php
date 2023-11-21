@@ -101,18 +101,12 @@ if (!function_exists("makeShortUrl")) {
             $apiShorter = 'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=' . config('generate.fire_base_web_api_key');
 
             $data = $client->post($apiShorter, [
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ],
-                'json' => [
-                    'dynamicLinkInfo' => [
-                        'dynamicLinkDomain' => env("DOMAIN_URI_PREFIX"),
-                        'link' => $fullUrl
-                    ],
-                    'suffix' => [
-                        'option' => 'SHORT'
-                    ]
-                ]
+                '{
+                   "longDynamicLink": '. $fullUrl .',
+                    "suffix" :{
+                     "option" : "SHORT"
+                   }
+                }'
             ]);
 
             $data = $data->getBody()->getContents();
