@@ -53,10 +53,9 @@ class UserService
         try {
             if (empty($user)) return false;
 
-            $fullUrl   = env("URL_APP");
-            $shortLink = makeShortUrl("https://examplefiver2.page.link/?link=https://examplefiver2.page.link/verify-email?verifyCode={$user->verify_code}&apn=com.example.fiver.dev");
-            $mailView  = new SendVerifyEmail($user, $shortLink);
-            $mailSend  = Mail::to($user->email)->send($mailView);
+            $link     = "http://127.0.0.1:8000/verify_email?verify_code={$user->verify_code}";
+            $mailView = new SendVerifyEmail($user, $link);
+            $mailSend = Mail::to($user->email)->send($mailView);
 
             return $mailSend;
         } catch (\Exception $exception) {
@@ -69,5 +68,15 @@ class UserService
     public function updateInfoById($data, $user_id)
     {
         return $this->userRepository->updateInfoById($data, $user_id);
+    }
+
+    /**
+     * Find first by verify token
+     * @param $token
+     * @return mixed
+     */
+    public function findUserByVerifyToken($token)
+    {
+        return $this->userRepository->findUserByVerifyToken($token);
     }
 }

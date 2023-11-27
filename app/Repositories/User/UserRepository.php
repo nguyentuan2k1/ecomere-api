@@ -67,4 +67,9 @@ class UserRepository implements UserInterface
             return false;
         }
     }
+
+    public function findUserByVerifyToken($token)
+    {
+        return User::where("verify_code", $token)->first();
+    }
 }

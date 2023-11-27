@@ -49,6 +49,8 @@ class UserController extends BaseController
 
                 if (empty($user)) return $this->sendError("Login fails", 400);
 
+                if (empty($user->email_verified_at)) return $this->sendError("Please verify your email before login", 400);
+
                 $userToken = $user->createToken("personal access token");
 
                 if (!filter_var($user->avatar, FILTER_VALIDATE_URL))
@@ -192,7 +194,7 @@ class UserController extends BaseController
                 "full_name"   => $request->get("full_name"),
                 "password"    => Hash::make($request->get("password")),
                 "type"        => "password",
-                "verify_code" => Str::random(30)
+                "verify_code" => sha1(Str::random(12). time()),
             ];
 
             $user = $this->userService->create($data);
@@ -372,5 +374,24 @@ class UserController extends BaseController
 
             return false;
         }
+    }
+
+    public function verifyTokenEmail(Request $request)
+    {
+        if (empty($request->get("verify_code"))) return "Token is required";
+
+        $user = $this->userService->findUserByVerifyToken($request->get("verify_code"));
+
+        if (empty($user)) return "Token is invalid";
+
+        if ($user->email_verified_at != null) return "your email has been verify";
+
+        $data = [
+           "email_verified_at" => Carbon::now()->timestamp
+        ];
+
+       $update = $this->userService->updateInfoById($data, $user->id);
+
+       if (!empty($update)) return "Verify Successfully";
     }
 }
