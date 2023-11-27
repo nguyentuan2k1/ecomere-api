@@ -53,7 +53,7 @@ class UserService
         try {
             if (empty($user)) return false;
 
-            $link     = "http://127.0.0.1:8000/verify_email?verify_code={$user->verify_code}";
+            $link     = env("APP_URL") . "verify_email?verify_code={$user->verify_code}";
             $mailView = new SendVerifyEmail($user, $link);
             $mailSend = Mail::to($user->email)->send($mailView);
 
