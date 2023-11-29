@@ -137,13 +137,15 @@ class UserController extends BaseController
                         "password"          => Hash::make(Str::random("12")),
                         "type"              => $request->get("register_type"),
                         "avatar"            => $verifyGoogleData->picture,
-                        "email_verified_at" => time(),
+                        "email_verified_at" => Carbon::now()->timestamp,
                     ];
 
                     $user = $this->userService->create($data);
 
                     if (empty($user)) return $this->sendError("Create user failed", 400);
                 }
+
+                if (empty($user->email_verified_at)) $this->userService->updateInfoById(["email_verified_at" => Carbon::now()->timestamp], $user->id);
 
                 $userToken = $user->createToken("personal access token");
 
