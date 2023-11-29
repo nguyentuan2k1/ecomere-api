@@ -72,7 +72,7 @@ class UserController extends BaseController
                 return $this->sendResponse($data);
             }
 
-            return $this->sendError("email or password is incorrect", 400);
+            return $this->sendError("email or password is incorrect", 401);
         } catch (Exception $exception){
             Log::error($exception->getMessage());
 
@@ -201,9 +201,7 @@ class UserController extends BaseController
 
             if (empty($user)) return $this->sendError("Create user failed", 400);
 
-            $mail = $this->userService->sendVerifyEmail($user);
-
-            if (empty($mail)) return $this->sendError("Create Account Successfully ! But Have A problem with email . Please Contact Admin", 500);
+            $this->userService->sendVerifyEmail($user);
 
             return $this->sendResponse([], "Create Account Successfully ! Please check email verify");
         } catch (\Exception $exception) {
@@ -247,7 +245,6 @@ class UserController extends BaseController
             if (empty($user)) return $this->sendError("Email is not exist", 400);
 
             $token = Str::random("30");
-//            Mail::to("tteo@gmail.com")->send(new SendVerifyEmail("asdas", "aaaaa"));
 
             $this->passwordResetService->deleteAllToken($user->email);
 
@@ -255,11 +252,15 @@ class UserController extends BaseController
 
             if (empty($passwordReset)) return $this->sendError("Can not create reset password", 400);
 
-            $resetLink = env("APP_URL");
-            $resetLink = "{$resetLink}/forgot-password/token?={$token}";
+            $resetLink = env("URL_MOBILE_APP");
+            $resetLink = "{$resetLink}forgot-password/token?={$token}";
+            $resetLink = makeShortUrl($resetLink);
 
-            $this->userService->sendEmailForgotPassword($user, $token, $resetLink);
+            if (empty($resetLink)) return $this->sendError("Can not create reset password link", 400);
 
+            $this->userService->sendEmailForgotPassword($user, $resetLink);
+
+            return $this->sendResponse("Send Email to user successfully");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 

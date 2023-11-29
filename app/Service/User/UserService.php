@@ -2,6 +2,8 @@
 
 namespace App\Service\User;
 
+use App\Jobs\SendEmailJob;
+use App\Mail\SendResetPasswordEmail;
 use App\Mail\SendVerifyEmail;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Facades\Log;
@@ -36,11 +38,13 @@ class UserService
         return $this->userRepository->getUserByEmail($email);
     }
 
-    public function sendEmailForgotPassword($user, $token, $reset_link)
+    public function sendEmailForgotPassword($user, $reset_link)
     {
         try {
             if (empty($user)) return false;
 
+            $resetPasswordMail = new SendResetPasswordEmail($user, $reset_link);
+            SendEmailJob::dispatch($user, $resetPasswordMail);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 
@@ -55,9 +59,8 @@ class UserService
 
             $link     = env("APP_URL") . "verify_email?verify_code={$user->verify_code}";
             $mailView = new SendVerifyEmail($user, $link);
-            $mailSend = Mail::to($user->email)->send($mailView);
+            SendEmailJob::dispatch($user, $mailView);
 
-            return $mailSend;
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 

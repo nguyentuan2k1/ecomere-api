@@ -3,6 +3,7 @@
 namespace App\Repositories\PasswordReset;
 
 use App\Models\PasswordReset;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class PasswordResetRepository implements PasswordResetInterface
@@ -19,7 +20,7 @@ class PasswordResetRepository implements PasswordResetInterface
            $passwordReset             = new PasswordReset();
            $passwordReset->email      = $email;
            $passwordReset->token      = $token;
-           $passwordReset->created_at = time();
+           $passwordReset->created_at = Carbon::now()->timestamp;
 
            $passwordReset->save();
 

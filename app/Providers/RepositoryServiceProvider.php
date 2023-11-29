@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Category\CategoryInterface;
+use App\Repositories\Category\CategoryRepository;
 use App\Repositories\PasswordReset\PasswordResetInterface;
 use App\Repositories\PasswordReset\PasswordResetRepository;
 use App\Repositories\User\UserInterface;
@@ -19,6 +21,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(UserInterface::class, UserRepository::class);
         $this->app->bind(PasswordResetInterface::class, PasswordResetRepository::class);
+        $this->app->bind(CategoryInterface::class, CategoryRepository::class);
     }
 
     /**

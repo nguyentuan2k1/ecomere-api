@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\User\UserController;
+use App\Http\Controllers\Web\CrawlerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,3 +20,4 @@ Route::get('/', function () {
 });
 
 Route::get("verify_email", [UserController::class, 'verifyTokenEmail']);
+Route::get("crawl-category", [CrawlerController::class, "crawlCategory"]);
