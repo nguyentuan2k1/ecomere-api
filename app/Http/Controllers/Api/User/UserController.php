@@ -381,13 +381,14 @@ class UserController extends BaseController
 
     public function verifyTokenEmail(Request $request)
     {
-        if (empty($request->get("verify_code"))) return "Token is required";
+        $buttonGotoApp = '<a href="https://examplefiver2.page.link/verify_email"><button>Go to App</button></a>';
+        if (empty($request->get("verify_code"))) return "Token is required {$buttonGotoApp}";
 
         $user = $this->userService->findUserByVerifyToken($request->get("verify_code"));
 
         if (empty($user)) return "Token is invalid";
 
-        if ($user->email_verified_at != null) return "your email has been verify";
+        if ($user->email_verified_at != null) return "your email has been verify {$buttonGotoApp}";
 
         $data = [
            "email_verified_at" => Carbon::now()->timestamp
@@ -395,6 +396,6 @@ class UserController extends BaseController
 
        $update = $this->userService->updateInfoById($data, $user->id);
 
-       if (!empty($update)) return "Verify Successfully";
+       if (!empty($update)) return "Verify Successfully {$buttonGotoApp}";
     }
 }
