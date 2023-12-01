@@ -25,5 +25,7 @@ return [
 
     "social_accepts" => [
         "google" => "google"
-    ]
+    ],
+
+    "reset_token_time" => env("RESET_TOKEN_TIME", 3600),
 ];

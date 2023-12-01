@@ -58,4 +58,9 @@ class PasswordResetRepository implements PasswordResetInterface
    {
        return PasswordReset::where("email", $email)->first();
    }
+
+   public function getPasswordResetByToken($token)
+   {
+       return PasswordReset::where("token", $token)->first();
+   }
 }

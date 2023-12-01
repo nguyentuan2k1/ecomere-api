@@ -9,4 +9,6 @@ interface PasswordResetInterface
     public function getPasswordResetByEmail($email);
 
     public function DeleteAllResetPasswordByEmail($email);
+
+    public function getPasswordResetByToken($token);
 }

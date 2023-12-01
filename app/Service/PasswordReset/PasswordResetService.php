@@ -27,4 +27,9 @@ class PasswordResetService
     {
         return $this->passwordReset->getPasswordResetByEmail($email);
     }
+
+    public function getPasswordResetByToken($token)
+    {
+        return $this->passwordReset->getPasswordResetByToken($token);
+    }
 }

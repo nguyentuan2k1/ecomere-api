@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\BaseController;
+use App\Http\Middleware\TrustHosts;
 use App\Service\PasswordReset\PasswordResetService;
 use App\Service\UploadFile\UploadFileService;
 use App\Service\User\UserService;
@@ -397,5 +398,76 @@ class UserController extends BaseController
        $update = $this->userService->updateInfoById($data, $user->id);
 
        if (!empty($update)) return "Verify Successfully {$buttonGotoApp}";
+    }
+
+    public function verifyTokenReset(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                "token" => ["required"],
+            ], [
+                "*.required" => "This field is required",
+            ]);
+
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            $resetPassword = $this->passwordResetService->getPasswordResetByToken($request->get("token"));
+
+            if (empty($resetPassword)) return $this->sendError("Token is invalid", 400);
+
+            if (Carbon::now()->timestamp > $resetPassword->created_at + config("generate.reset_token_time")) return $this->sendError("Token is expired", 400);
+
+            return $this->sendResponse([], "Your Token is good");
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return $this->sendError($exception->getMessage(), 500);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                "token"        => ["required"],
+                "new_password" => ["required", "min:" . config("generate.user.password.min"), "max:" . config("generate.user.password.max")]
+            ], [
+                "*.required" => "This field is required",
+            ]);
+
+            if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
+
+            $resetPassword = $this->passwordResetService->getPasswordResetByToken($request->get("token"));
+
+            if (empty($resetPassword)) return $this->sendError("Token is invalid", 400);
+
+            if (Carbon::now()->timestamp > $resetPassword->created_at + config("generate.reset_token_time")) return $this->sendError("Token is expired", 400);
+
+            $dataUpdate = [
+                "password" => Hash::make($request->get("new_password")),
+            ];
+
+            $user = $this->userService->getUserByEmail($resetPassword->email);
+
+            if ($user->email_verified_at == null) {
+                $updateVerifyEmail = [
+                    "email_verified_at" => Carbon::now()->timestamp,
+                ];
+
+                $dataUpdate = array_merge($dataUpdate, $updateVerifyEmail);
+            }
+
+            $update = $this->userService->updateInfoById($dataUpdate, $user->id);
+
+            if (!$update) return $this->sendError("Update Password fail", 400);
+
+            $this->passwordResetService->deleteAllToken($user->email);
+
+            return $this->sendResponse([],"Update Password Successfully");
+        } catch (Exception $exception){
+            Log::error($exception->getMessage());
+
+            return false;
+        }
     }
 }

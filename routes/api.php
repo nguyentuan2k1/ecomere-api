@@ -23,6 +23,8 @@ Route::post("login", [UserController::class, "login"]);
 Route::post("register", [UserController::class, "register"]);
 Route::post("register-social", [UserController::class, "registerBySocial"]);
 Route::post("forgot-password", [UserController::class, "forgotPassword"]);
+Route::post("verify-reset-token", [UserController::class, "verifyTokenReset"]);
+Route::post("reset-password", [UserController::class, "resetPassword"]);
 
 Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
     Route::get("info", [UserController::class, 'info']);
