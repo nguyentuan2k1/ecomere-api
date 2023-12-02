@@ -255,8 +255,8 @@ class UserController extends BaseController
 
             if (empty($passwordReset)) return $this->sendError("Can not create reset password", 400);
 
-            $resetLink = env("URL_MOBILE_APP");
-            $resetLink = "{$resetLink}forgot-password/token?={$token}";
+            $resetLink = config("generate.url_mobile_app");
+            $resetLink = "{$resetLink}forgot-password?token={$token}";
             $resetLink = makeShortUrl($resetLink);
 
             if (empty($resetLink)) return $this->sendError("Can not create reset password link", 400);
@@ -382,7 +382,9 @@ class UserController extends BaseController
 
     public function verifyTokenEmail(Request $request)
     {
-        $buttonGotoApp = '<a href="https://examplefiver2.page.link/verify_email"><button>Go to App</button></a>';
+        $urlMobile     = config("generate.url_mobile_app") . "verify_email";
+        $buttonGotoApp = "<a href='{$urlMobile}'><button>Go to App</button></a>";
+
         if (empty($request->get("verify_code"))) return "Token is required {$buttonGotoApp}";
 
         $user = $this->userService->findUserByVerifyToken($request->get("verify_code"));
