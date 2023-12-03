@@ -35,7 +35,7 @@
             color: #666;
         }
 
-        .verify-email {
+        .go-to-app {
             display: inline-block;
             margin-top: 20px;
             padding: 10px 20px;
@@ -46,7 +46,7 @@
             transition: background-color 0.3s;
         }
 
-        .verify-email:hover {
+        .go-to-app:hover {
             background-color: #2980b9;
         }
     </style>
@@ -54,11 +54,8 @@
 
 <body>
 <div class="reset-container">
-    <h4>Hi {{$user->full_name}}</h4>
-    <p>Welcome to shop</p>
-    <h2>Verify Your email</h2>
-    <p>Click the link below to verify your email.</p>
-    <a href="{{$verifyLink}}" class="verify-email">Verify Your email</a>
+    <h2>{{$message}}</h2>
+    <a href="{{$url_go_to_app}}" class="go-to-app">Go to app</a>
 </div>
 </body>
 </html>

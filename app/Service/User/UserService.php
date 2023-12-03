@@ -7,7 +7,6 @@ use App\Mail\SendResetPasswordEmail;
 use App\Mail\SendVerifyEmail;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class UserService
 {

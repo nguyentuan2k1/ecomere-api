@@ -30,4 +30,5 @@ return [
     "reset_token_time" => env("RESET_TOKEN_TIME", 3600),
     "url_mobile_app"   => env("URL_MOBILE_APP"),
     "mobile_app_id"    => env("MOBILE_APP_ID"),
+    "url_crawl_data"   => env("URL_CRAWL_DATA"),
 ];

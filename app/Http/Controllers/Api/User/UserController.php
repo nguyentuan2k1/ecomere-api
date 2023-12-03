@@ -361,8 +361,7 @@ class UserController extends BaseController
 
             if ($avatar->getSize() > 10 * 1024 * 1024) return $this->sendValidator(["avatar" => "File size is invalid"]);
 
-            $file = $avatar->getClientOriginalName();
-
+            $file      = $avatar->getClientOriginalName();
             $filename  = pathinfo($file, PATHINFO_FILENAME);
             $extension = pathinfo($file, PATHINFO_EXTENSION);
             $filename  = vietnameseToLatin($filename) . "-" . time() . "." . $extension;
@@ -382,24 +381,35 @@ class UserController extends BaseController
 
     public function verifyTokenEmail(Request $request)
     {
-        $urlMobile     = config("generate.url_mobile_app") . "verify_email";
-        $buttonGotoApp = "<a href='{$urlMobile}'><button>Go to App</button></a>";
+        $urlMobile = config("generate.url_mobile_app") . "verify_email";
+        $message   = "";
 
-        if (empty($request->get("verify_code"))) return "Token is required {$buttonGotoApp}";
+        if (empty($request->get("verify_code"))) {
+            $message = "Verify Code is required";
+        } else {
+            $user = $this->userService->findUserByVerifyToken($request->get("verify_code"));
 
-        $user = $this->userService->findUserByVerifyToken($request->get("verify_code"));
+            if (empty($user)) {
+                $message = "Verify Code is invalid";
+            } else {
+                if ($user->email_verified_at != null) {
+                    $message = "Your email has been verify";
+                } else {
+                    $data = [
+                        "email_verified_at" => Carbon::now()->timestamp
+                    ];
 
-        if (empty($user)) return "Token is invalid";
+                    $update = $this->userService->updateInfoById($data, $user->id);
 
-        if ($user->email_verified_at != null) return "your email has been verify {$buttonGotoApp}";
+                    if (!empty($update)) $message = "Verify Successfully";
+                }
+            }
+        }
 
-        $data = [
-           "email_verified_at" => Carbon::now()->timestamp
-        ];
-
-       $update = $this->userService->updateInfoById($data, $user->id);
-
-       if (!empty($update)) return "Verify Successfully {$buttonGotoApp}";
+       return view("VerifyEmailToken")->with([
+           "message"       => $message,
+           "url_go_to_app" => $urlMobile,
+       ]);
     }
 
     public function verifyTokenReset(Request $request)
