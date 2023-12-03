@@ -107,7 +107,14 @@ if (!function_exists("makeShortUrl")) {
                 'json' => [
                     'dynamicLinkInfo' => [
                         'dynamicLinkDomain' => env("DOMAIN_URI_PREFIX"),
-                        'link' => $fullUrl
+                        'link'              => $fullUrl,
+
+                        'androidInfo' => [
+                            "androidPackageName" => config("generate.mobile_app_id"),
+                        ],
+                        'iosInfo' => [
+                            "iosBundleId" => config("generate.mobile_app_id"),
+                        ],
                     ],
                     'suffix' => [
                         'option' => 'SHORT'
