@@ -40,4 +40,12 @@ class CategoryRepository implements CategoryInterface
     {
         return Category::where("name", $category_name)->first();
     }
+
+    /**
+     *
+     */
+    public function getAll()
+    {
+
+    }
 }
