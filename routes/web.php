@@ -23,3 +23,6 @@ Route::get("verify_email", [UserController::class, 'verifyTokenEmail']);
 Route::get("crawl-category", [CrawlerController::class, "crawlCategory"]);
 Route::get("crawl-product", [CrawlerController::class, "crawlProductView"]);
 Route::post("crawl-product", [CrawlerController::class, "crawlProductHandle"]);
+Route::get("test", function () {
+
+});

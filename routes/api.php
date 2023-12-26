@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Banner\BannerController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,3 +34,5 @@ Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
     Route::post("update-password", [UserController::class, "updatePassword"]);
     Route::post("update-avatar", [UserController::class, 'updateAvatar']);
 });
+
+Route::get("get-home-banner", [BannerController::class, "getHomeBanner"]);
