@@ -30,11 +30,40 @@ class Category extends Model
 
     public function childs()
     {
-        return $this->hasMany(Category::class, "parent_category", "id")->with('childs');
+        return $this->hasMany(Category::class, "parent_category", "id")
+            ->select([
+                "id",
+                "name",
+                "image",
+                "order",
+                "parent_category",
+                "banner_id",
+            ])->with('childs');
     }
 
     public function parents()
     {
-        return $this->belongsTo(Category::class, "parent_category", "id")->with("parents");
+        return $this->belongsTo(Category::class, "parent_category", "id")
+            ->select([
+                "id",
+                "name",
+                "image",
+                "order",
+                "parent_category",
+                "banner_id",
+            ])
+            ->with("parents");
+    }
+
+    public function banner()
+    {
+        return $this->belongsTo(Banner::class, "banner_id")->select([
+            "id",
+            "name",
+            "banner_link",
+            "image",
+            "expired_at",
+            "active",
+        ]);
     }
 }

@@ -52,6 +52,14 @@ class CategoryRepository implements CategoryInterface
         if (!empty($params['active'])) $model = $model->where("active", $params['active']);
 
         $model = $model->orderBy("order", "DESC");
+        $model = $model->select([
+            "id",
+            "name",
+            "image",
+            "order",
+            "parent_category",
+            "banner_id",
+        ]);
 
         $model = $model->get();
 
@@ -60,7 +68,21 @@ class CategoryRepository implements CategoryInterface
 
     public function findById($id)
     {
-        $model = Category::with('parents')->with('childs')->find($id);
+        $model = Category::with('parents');
+        $model = $model->with('childs');
+        $model = $model->with("banner");
+
+        $model = $model->select([
+            "id",
+            "name",
+            "image",
+            "order",
+            "parent_category",
+            "banner_id",
+        ]);
+
+        $model = $model->find($id);
+
 
         return $model;
     }
