@@ -32,4 +32,27 @@ class CategoryService
     {
         return $this->categoryRepository->findByName($category_name);
     }
+
+    /**
+     * Get List No child and item first have all child
+     * @return mixed
+     */
+    public function getListNoChild()
+    {
+        $data = $this->categoryRepository->getListNoChild();
+
+        if (!empty($data)) $data[0] = $this->findById($data[0]->id);
+
+        return $data;
+    }
+
+    /**
+     * get category by category id
+     * @param $id
+     * @return mixed
+     */
+    public function findById($id)
+    {
+        return $this->categoryRepository->findById($id);
+    }
 }

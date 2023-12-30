@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Banner\BannerController;
+use App\Http\Controllers\Api\Category\CategoryController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,3 +37,5 @@ Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
 });
 
 Route::get("get-home-banner", [BannerController::class, "getHomeBanner"]);
+Route::get("get-category", [CategoryController::class, "getList"]);
+Route::get("get-category-by-id/{id}", [CategoryController::class, "findById"]);

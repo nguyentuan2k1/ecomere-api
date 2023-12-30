@@ -11,6 +11,13 @@ class BannerRepository implements BannerInterface
     public function getList($params = [])
     {
         $banners = Banner::query()->orderBy("order", "ASC");
+        $banners = $banners->select([
+            "name",
+            "banner_link",
+            "is_home",
+            "image",
+            "expired_at"
+        ]);
         $banners = $banners->orderBy("id", "DESC");
         $banners = $banners->where("active", config("generate.active"));
 

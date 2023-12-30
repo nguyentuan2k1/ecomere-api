@@ -8,5 +8,7 @@ interface CategoryInterface
 
     public function findByName($category_name);
 
-    public function getAll();
+    public function getListNoChild();
+
+    public function findById($id);
 }

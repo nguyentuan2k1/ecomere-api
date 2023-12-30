@@ -13,6 +13,11 @@ class BannerService
         $this->bannerRepository = $bannerRepository;
     }
 
+    /**
+     * Get list Banner
+     * @param $params
+     * @return mixed
+     */
     public function getList($params = [])
     {
         return $this->bannerRepository->getList($params);

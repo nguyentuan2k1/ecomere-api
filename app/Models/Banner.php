@@ -21,4 +21,11 @@ class Banner extends Model
         "order",
         "active",
     ];
+
+    public function getImageAttribute()
+    {
+        if (!empty($this->attributes['image'])) return $this->attributes['image'] = getFileInStorage($this->attributes['image']);
+
+        return $this->attributes['image'];
+    }
 }
