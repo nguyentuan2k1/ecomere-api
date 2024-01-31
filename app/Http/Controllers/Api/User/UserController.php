@@ -378,9 +378,13 @@ class UserController extends BaseController
 
             $update = $this->userService->updateInfoById($data, $user->id);
 
-            if ($update) return $this->sendResponse([], "Update Avatar Successfully");
+            if (!$update) {
+                if (Storage::exists($filePath)) Storage::delete($filePath);
 
-            return $this->sendError("Update Avatar Failed");
+                return $this->sendError("Update Avatar Failed");
+            }
+
+            return $this->sendResponse([], "Update Avatar Successfully");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
