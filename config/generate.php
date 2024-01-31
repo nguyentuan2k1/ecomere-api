@@ -35,5 +35,9 @@ return [
     "url_crawl_data"   => env("URL_CRAWL_DATA"),
 
     'active'   => "Y",
-    'deactive' => "N"
+    'deactive' => "N",
+
+    "file_type_accept" => [
+        "avatar" => ["jpg", "png", "jpeg", "svg"],
+    ]
 ];

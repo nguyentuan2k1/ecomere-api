@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Mockery\Exception;
@@ -355,7 +356,7 @@ class UserController extends BaseController
             if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
 
             $avatar          = $request->file("avatar");
-            $typeFileAccepts = ["jpg", "png", "jpeg", "svg"];
+            $typeFileAccepts = config("generate.file_type_accept.avatar");
 
             if (!in_array($avatar->getClientOriginalExtension(), $typeFileAccepts)) return $this->sendValidator(["avatar" => "File type is invalid"]);
 
@@ -364,14 +365,22 @@ class UserController extends BaseController
             $file      = $avatar->getClientOriginalName();
             $filename  = pathinfo($file, PATHINFO_FILENAME);
             $extension = pathinfo($file, PATHINFO_EXTENSION);
-            $filename  = vietnameseToLatin($filename) . "-" . time() . "." . $extension;
-            $filePath  = $this->uploadFileService->uploadFile($avatar, $filename, "public/avatar");
+            $filename  = Str::slug($filename) . "-" . time() . "." . $extension;
+            $filePath  = $this->uploadFileService->uploadFile($avatar, $filename, config("generate.file_storage_directory.avatar"));
 
             if (empty($filePath)) return $this->sendError("Can not upload your avatar", 400);
 
-            if (!filter_var($filePath, FILTER_VALIDATE_URL)) $filePath = getUrlStorageFile($filePath);
+            if (Storage::exists($user->avatar)) Storage::delete($user->avatar);
 
-            return $filePath;
+            $data = [
+                "avatar" => $filePath
+            ];
+
+            $update = $this->userService->updateInfoById($data, $user->id);
+
+            if ($update) return $this->sendResponse([], "Update Avatar Successfully");
+
+            return $this->sendError("Update Avatar Failed");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
