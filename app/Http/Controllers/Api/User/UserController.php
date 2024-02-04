@@ -384,7 +384,7 @@ class UserController extends BaseController
                 return $this->sendError("Update Avatar Failed");
             }
 
-            return $this->sendResponse([], "Update Avatar Successfully");
+            return $this->sendResponse(["avatar" => getUrlStorageFile($filePath)], "Update Avatar Successfully");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
