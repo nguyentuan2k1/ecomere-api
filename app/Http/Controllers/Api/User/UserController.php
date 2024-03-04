@@ -370,7 +370,12 @@ class UserController extends BaseController
 
             if (empty($filePath)) return $this->sendError("Can not upload your avatar", 400);
 
-            if (Storage::exists($user->avatar)) Storage::delete($user->avatar);
+            if (!empty($user->avatar)
+                && Storage::exists($user->avatar)
+            )  {
+                Storage::delete($user->avatar);
+            }
+
 
             $data = [
                 "avatar" => $filePath
