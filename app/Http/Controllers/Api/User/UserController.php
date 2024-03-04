@@ -157,7 +157,11 @@ class UserController extends BaseController
                     "avatar"
                 ]);
 
-                if (!empty($user->avatar)) $user->avatar = getUrlStorageFile($user->avatar);
+                if (!empty($user['avatar'])
+                    && !filter_var($user['avatar'], FILTER_VALIDATE_URL)
+                ) {
+                    $user['avatar'] = getUrlStorageFile($user['avatar']);
+                }
 
                 $data = [
                     "user_info"    => $user,
