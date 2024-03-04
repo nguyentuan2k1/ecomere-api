@@ -157,6 +157,8 @@ class UserController extends BaseController
                     "avatar"
                 ]);
 
+                if (!empty($user->avatar)) $user->avatar = getUrlStorageFile($user->avatar);
+
                 $data = [
                     "user_info"    => $user,
                     "access_token" => $userToken->accessToken,
