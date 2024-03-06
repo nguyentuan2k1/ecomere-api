@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Banner\BannerController;
-use App\Http\Controllers\Api\Category\CategoryController;
+use App\Http\Controllers\Awpi\Category\CategoryController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
