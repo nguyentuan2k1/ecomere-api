@@ -387,15 +387,17 @@ class UserController extends BaseController
                 "avatar" => $filePath
             ];
 
-            $update = $this->userService->updateInfoById($data, $user->id);
+            $updateUser = $this->userService->updateInfoById($data, $user->id);
 
-            if (!$update) {
+            if (!$updateUser) {
                 if (Storage::exists($filePath)) Storage::delete($filePath);
 
                 return $this->sendError("Update Avatar Failed");
             }
+            
+            $updateUser -> avatar = getUrlStorageFile($updateUser -> avatar);
 
-            return $this->sendResponse(["avatar" => getUrlStorageFile($filePath)], "Update Avatar Successfully");
+            return $this->sendResponse(["user_info" => $updateUser], "Update Avatar Successfully");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
