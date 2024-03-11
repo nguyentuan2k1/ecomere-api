@@ -6,31 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
-class Product extends Model
+class ProductVariant extends Model
 {
     use HasFactory;
-    protected $table      = "products";
-    public $timestamps    = true;
+    protected $table      = "product_variant";
     protected $primaryKey = "id";
+    public $incrementing  = true;
+    public $timestamps    = true;
 
     protected $fillable = [
-        "id",
-        "name",
-        "category_id",
-        "rating",
-        "description",
-        "brand_id",
+        "price",
         "image",
         "sale_price",
-        "price",
-        "order",
+        "product_id",
+        "product_parent",
+        "quantity",
         "active",
+        "order",
     ];
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class, "category_id", "id");
-    }
 
     public function setCreatedAt()
     {
