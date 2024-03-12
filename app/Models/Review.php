@@ -19,5 +19,17 @@ class Review extends Model
         "rating",
         "content",
         "product_id",
+        "created_at",
+        "updated_at",
     ];
+
+    public function user()
+    {
+       return $this->hasOne(User::class, "id", "user_id");
+    }
+
+    public function reviewHelpful()
+    {
+        return $this-> hasOne(ReviewHelpful::class, "review_id", "id")->where("user_id", auth()->guard('api')->user()->id);
+    }
 }

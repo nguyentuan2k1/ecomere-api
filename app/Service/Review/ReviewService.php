@@ -22,4 +22,14 @@ class ReviewService
     {
         return $this->reviewRepository->getProductRating($id);
     }
+
+    /**
+     * Get product reviews
+     * @param array $param
+     * @return mixed
+     */
+    public function getProductReviews($param = [])
+    {
+        return $this->reviewRepository->getProductReviews($param);
+    }
 }

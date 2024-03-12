@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Review;
 use App\Http\Controllers\BaseController;
 use App\Service\Review\ReviewService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends BaseController
@@ -41,6 +42,21 @@ class ReviewController extends BaseController
             return $this->sendResponse($data);
         } catch (\Exception $exception) {
             Log::error("{$exception->getMessage()}- Line: {$exception->getLine()} - File: {$exception->getFile()}");
+
+            return $this->sendError("Have an error. Please try again", 500);
+        }
+    }
+
+    public function getProductReviews(Request $request)
+    {
+        try {
+            $rating = $this->reviewService->getProductReviews([$request->get("product_id"), $request->get("page"), $request->get("limit")]);
+
+            return $this->sendResponse($rating);
+
+        } catch (\Exception $exception) {
+            $erros = $exception->getMessage() . " - Line: " . $exception->getLine() . " - File: " . $exception->getFile();
+            Log::error($erros);
 
             return $this->sendError("Have an error. Please try again", 500);
         }
