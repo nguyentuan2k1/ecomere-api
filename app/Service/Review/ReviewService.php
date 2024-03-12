@@ -28,8 +28,8 @@ class ReviewService
      * @param array $param
      * @return mixed
      */
-    public function getProductReviews($param = [])
+    public function getProductReviews($product_id, $params)
     {
-        return $this->reviewRepository->getProductReviews($param);
+        return $this->reviewRepository->getProductReviews($product_id, $params);
     }
 }

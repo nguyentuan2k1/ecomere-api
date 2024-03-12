@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Review;
 use App\Http\Controllers\BaseController;
 use App\Service\Review\ReviewService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends BaseController
@@ -50,10 +50,20 @@ class ReviewController extends BaseController
     public function getProductReviews(Request $request)
     {
         try {
-            $rating = $this->reviewService->getProductReviews([$request->get("product_id"), $request->get("page"), $request->get("limit")]);
+            $productId = $request->get("product_id");
+            $params    = [];
 
-            return $this->sendResponse($rating);
+            if (intval($request->get("limit"))
+                && $request->get("limit") >= 0
+            ) {
+                $params['limit'] = $request->get("limit");
+            } else {
+                $params['limit'] = 5;
+            }
 
+            $rating = $this->reviewService->getProductReviews($productId, $params);
+
+            return $this->sendPaginationResponse($rating);
         } catch (\Exception $exception) {
             $erros = $exception->getMessage() . " - Line: " . $exception->getLine() . " - File: " . $exception->getFile();
             Log::error($erros);

@@ -28,8 +28,8 @@ class Review extends Model
        return $this->hasOne(User::class, "id", "user_id");
     }
 
-    public function reviewHelpful()
+    public function reviewHelpFul()
     {
-        return $this-> hasOne(ReviewHelpful::class, "review_id", "id")->where("user_id", auth()->guard('api')->user()->id);
+        return $this->hasMany(ReviewHelpful::class, "review_id", "id")->where("user_id", 2);
     }
 }
