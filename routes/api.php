@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Banner\BannerController;
 use App\Http\Controllers\Api\Category\CategoryController;
+use App\Http\Controllers\Api\Review\ReviewController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,7 +29,7 @@ Route::post("forgot-password", [UserController::class, "forgotPassword"]);
 Route::post("verify-reset-token", [UserController::class, "verifyTokenReset"]);
 Route::post("reset-password", [UserController::class, "resetPassword"]);
 
-Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
+Route::prefix("user")->middleware(["checkAuthApi"])->group(function () {
     Route::get("info", [UserController::class, 'info']);
     Route::post("update-info", [UserController::class, 'updateInfo']);
     Route::get("logout", [UserController::class, "logout"]);
@@ -39,3 +40,7 @@ Route::prefix("user")->middleware(["checkAuthApi"])->group( function (){
 Route::get("get-home-banner", [BannerController::class, "getHomeBanner"]);
 Route::get("get-category", [CategoryController::class, "getList"]);
 Route::get("get-category-by-id/{id}", [CategoryController::class, "findById"]);
+
+Route::prefix("review")->middleware(["checkAuthApi"])->group(function () {
+    Route::get("get-product-rating", [ReviewController::class, 'getProductRating']);
+});
