@@ -22,9 +22,9 @@ class ReviewRepository implements ReviewInterface
     /**
      * Get review
      * @param array $params
-     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function getProductReviews($params = [])
+    public function getProductReviews($product_id, $params = [])
     {
         $user                     = auth()->guard('api')->user();
         $reviews                  = Review::query()
