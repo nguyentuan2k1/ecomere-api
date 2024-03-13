@@ -17,7 +17,6 @@ return new class extends Migration
             $table->id();
             $table->integer("review_id");
             $table->integer("user_id");
-            $table->integer("product_id");
             $table->timestamps();
         });
     }

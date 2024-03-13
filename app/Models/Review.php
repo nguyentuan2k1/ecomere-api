@@ -27,4 +27,19 @@ class Review extends Model
     {
        return $this->hasOne(User::class, "id", "user_id")->select("id","full_name", "avatar");
     }
+
+    public function reviewHelpful(){
+        $user = auth()->guard('api')->user();
+        return $this->hasMany(ReviewHelpful::class, "review_id", "id")->where("user_id", $user->id);
+    }
+
+    public function getIsHelpfulAttribute()
+    {
+        return $this->attributes['is_helpful'] > 0;
+    }
+
+    public function getUserAvatarAttribute()
+    {
+        return $this->attributes['user']->avatar = getFileInStorage($this->attributes['user']->avatar);
+    }
 }

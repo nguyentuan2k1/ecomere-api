@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Review;
 use App\Http\Controllers\BaseController;
 use App\Service\Review\ReviewService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends BaseController
@@ -69,9 +68,14 @@ class ReviewController extends BaseController
                 $params['page'] = 1;
             }
 
-            $rating = $this->reviewService->getProductReviews($productId, $params);
+            $productReviews = $this->reviewService->getProductReviews($productId, $params);
 
-            return $this->sendPaginationResponse($rating);
+            foreach ($productReviews as $review) {
+                $review->getIsHelpfulAttribute();
+                $review->user->getAvatarAttribute();
+            }
+
+            return $this->sendPaginationResponse($productReviews);
         } catch (\Exception $exception) {
             $erros = $exception->getMessage() . " - Line: " . $exception->getLine() . " - File: " . $exception->getFile();
             Log::error($erros);

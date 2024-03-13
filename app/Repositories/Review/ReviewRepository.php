@@ -3,7 +3,6 @@
 namespace App\Repositories\Review;
 
 use App\Models\Review;
-use App\Models\ReviewHelpful;
 
 class ReviewRepository implements ReviewInterface
 {
@@ -22,32 +21,21 @@ class ReviewRepository implements ReviewInterface
     /**
      * Get review
      * @param array $params
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function getProductReviews($product_id, $params = [])
     {
-        $user                     = auth()->guard('api')->user();
-        $reviews                  = Review::query()
-                                    ->where("product_id", $product_id)
-                                    ->with(['user'])
-                                    ->orderBy("created_at", "DESC");
+        $reviews   = Review::query()
+                     ->where("reviews.product_id", $product_id)
+                     ->with(['user'])
+                     ->withCount(['reviewHelpful as is_helpful'])
+                     ->orderBy("created_at", "DESC");
 
-        $reviews                  = $reviews->paginate($params['limit'], ['*'], 'page', $params['page']);
+        if(empty($params['limit'])
+            || !intval($params['limit'])
+            || $params['limit'] <= 0
+        ) return $reviews->get();
 
-        $reviews->getCollection()->transform(function ($review) use ($user) {
-            $review->user->avatar = getFileInStorage($review->user->avatar);
-
-            $getReviewHelpful     = ReviewHelpful::query()
-                                    ->where("review_id", $review->id)
-                                    ->where("user_id",$user->id)
-                                    ->first();
-
-            $review->is_helpful   = !empty($getReviewHelpful);
-
-            return $review;
-        });
-
-        return $reviews;
+        return $reviews->paginate($params['limit'], ['*'], 'page', $params['page']);
     }
 }
 
