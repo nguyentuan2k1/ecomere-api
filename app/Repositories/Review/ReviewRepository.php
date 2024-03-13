@@ -36,11 +36,14 @@ class ReviewRepository implements ReviewInterface
 
         $reviews->getCollection()->transform(function ($review) use ($user) {
             $review->user->avatar = getFileInStorage($review->user->avatar);
+
             $getReviewHelpful     = ReviewHelpful::query()
                                     ->where("review_id", $review->id)
                                     ->where("user_id",$user->id)
                                     ->first();
+
             $review->is_helpful   = !empty($getReviewHelpful);
+
             return $review;
         });
 
