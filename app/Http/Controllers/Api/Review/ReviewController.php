@@ -54,11 +54,19 @@ class ReviewController extends BaseController
             $params    = [];
 
             if (intval($request->get("limit"))
-                && $request->get("limit") >= 0
+                && $request->get("limit") > 0
             ) {
                 $params['limit'] = $request->get("limit");
             } else {
                 $params['limit'] = 5;
+            }
+
+            if (intval($request->get("page"))
+                && $request->get("page") > 0
+            ) {
+                $params['page'] = $request->get("page");
+            } else {
+                $params['page'] = 1;
             }
 
             $rating = $this->reviewService->getProductReviews($productId, $params);

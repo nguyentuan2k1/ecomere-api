@@ -26,16 +26,21 @@ class ReviewRepository implements ReviewInterface
      */
     public function getProductReviews($params = [])
     {
-        $reviews = Review::query()
-            ->where("product_id", $product_id)
-            ->with(['reviewHelpful', 'user'])
-            ->orderBy("created_at", "DESC");
+        $user                     = auth()->guard('api')->user();
+        $reviews                  = Review::query()
+                                    ->where("product_id", $product_id)
+                                    ->with(['user'])
+                                    ->orderBy("created_at", "DESC");
 
-        $reviews = $reviews->paginate($params['limit']);
+        $reviews                  = $reviews->paginate($params['limit'], ['*'], 'page', $params['page']);
 
-        $reviews->getCollection()->transform(function ($review) {
+        $reviews->getCollection()->transform(function ($review) use ($user) {
             $review->user->avatar = getFileInStorage($review->user->avatar);
-            $review->is_helpful = (bool)$review->reviewHelpful;
+            $getReviewHelpful     = ReviewHelpful::query()
+                                    ->where("review_id", $review->id)
+                                    ->where("user_id",$user->id)
+                                    ->first();
+            $review->is_helpful   = !empty($getReviewHelpful);
             return $review;
         });
 

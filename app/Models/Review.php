@@ -27,10 +27,4 @@ class Review extends Model
     {
        return $this->hasOne(User::class, "id", "user_id")->select("id","full_name", "avatar");
     }
-
-    public function reviewHelpful()
-    {
-        $user = auth()->guard('api')->user();
-        return $this->hasOne(ReviewHelpful::class, "review_id", "id")->where("user_id", $user->id)->select("id", "review_id", "user_id");
-    }
 }
