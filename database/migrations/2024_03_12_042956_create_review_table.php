@@ -21,6 +21,7 @@ return new class extends Migration
                $table->integer("rating");
                $table->string("content")->nullable();
                $table->integer("product_id");
+               $table->timestamps();
            });
        }
     }
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('rating');
+        Schema::dropIfExists('reviews');
     }
 };

@@ -41,4 +41,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getAvatarAttribute()
+    {
+        if (!$this->attributes['avatar'] != null) {
+            return $this->attributes['avatar'] = getFileInStorage($this->attributes['avatar']);
+        }
+        return "";
+    }
 }

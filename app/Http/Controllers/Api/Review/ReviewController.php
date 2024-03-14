@@ -45,4 +45,42 @@ class ReviewController extends BaseController
             return $this->sendError("Have an error. Please try again", 500);
         }
     }
+
+    public function getProductReviews(Request $request)
+    {
+        try {
+            $productId = $request->get("product_id");
+            $params    = [];
+
+            if (intval($request->get("limit"))
+                && $request->get("limit") > 0
+            ) {
+                $params['limit'] = $request->get("limit");
+            } else {
+                $params['limit'] = 5;
+            }
+
+            if (intval($request->get("page"))
+                && $request->get("page") > 0
+            ) {
+                $params['page'] = $request->get("page");
+            } else {
+                $params['page'] = 1;
+            }
+
+            $productReviews = $this->reviewService->getProductReviews($productId, $params);
+
+            foreach ($productReviews as $review) {
+                $review->getIsHelpfulAttribute();
+                $review->user->getAvatarAttribute();
+            }
+
+            return $this->sendPaginationResponse($productReviews);
+        } catch (\Exception $exception) {
+            $erros = $exception->getMessage() . " - Line: " . $exception->getLine() . " - File: " . $exception->getFile();
+            Log::error($erros);
+
+            return $this->sendError("Have an error. Please try again", 500);
+        }
+    }
 }

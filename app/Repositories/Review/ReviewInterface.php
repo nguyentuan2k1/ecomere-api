@@ -6,5 +6,5 @@ interface ReviewInterface
 {
     public function getProductRating($id);
 
-    public function getReviews();
+    public function getProductReviews($product_id, $params = []);
 }
