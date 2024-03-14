@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -44,9 +45,25 @@ class User extends Authenticatable
 
     public function getAvatarAttribute()
     {
-        if (!$this->attributes['avatar'] != null) {
-            return $this->attributes['avatar'] = getFileInStorage($this->attributes['avatar']);
+        return getFileInStorage($this->attributes['avatar'] ?? "");
+    }
+
+    public function getDOBAttribute()
+    {
+        $dateOfBirth = Carbon::parse($this->attributes['date_of_birth'] ?? null);
+        return $dateOfBirth ? $dateOfBirth->format('d/m/Y') : "";
+    }
+
+    public function toUserDataApp($isNeedFormatAvatar = true){
+        $data = $this->only(['full_name', 'email', 'avatar', 'date_of_birth']);
+
+        $data['date_of_birth'] = $this->getDOBAttribute();
+
+        if($isNeedFormatAvatar)
+        {
+            $data['avatar'] = $this->getAvatarAttribute();
         }
-        return "";
+
+        return $data;
     }
 }
