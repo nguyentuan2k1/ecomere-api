@@ -44,6 +44,9 @@ class User extends Authenticatable
 
     public function getAvatarAttribute()
     {
-        return $this->attributes['avatar'] = getFileInStorage($this->attributes['avatar']);
+        if (!$this->attributes['avatar'] != null) {
+            return $this->attributes['avatar'] = getFileInStorage($this->attributes['avatar']);
+        }
+        return "";
     }
 }

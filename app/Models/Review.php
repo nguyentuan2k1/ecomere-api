@@ -37,9 +37,4 @@ class Review extends Model
     {
         return $this->attributes['is_helpful'] > 0;
     }
-
-    public function getUserAvatarAttribute()
-    {
-        return $this->attributes['user']->avatar = getFileInStorage($this->attributes['user']->avatar);
-    }
 }
