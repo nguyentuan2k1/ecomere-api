@@ -17,6 +17,8 @@ class Brand extends Model
         "id",
         "name",
         "image",
+        "created_at",
+        "updated_at",
     ];
 
     public function setCreatedAt()
