@@ -57,14 +57,8 @@ class UserController extends BaseController
                 if (!filter_var($user->avatar, FILTER_VALIDATE_URL))
                     $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(config("generate.file_storage_directory.avatar") . "/" .  config("generate.user.avatar.default"));
 
-                $user = $user->only([
-                    "full_name",
-                    "email",
-                    "avatar"
-                ]);
-
                 $data = [
-                    "user_info"    => $user,
+                    "user_info"    => $user->toUserDataApp(),
                     "access_token" => $userToken->accessToken,
                     'token_type'   => 'Bearer',
                     'expires_at'   => Carbon::parse($userToken->token->expires_at)->timestamp
@@ -91,13 +85,7 @@ class UserController extends BaseController
             if (!filter_var($user->avatar, FILTER_VALIDATE_URL))
                 $user->avatar = !empty($user->avatar) ? getUrlStorageFile($user->avatar) : getUrlStorageFile(config("generate.file_storage_directory.avatar") . "/" .  config("generate.user.avatar.default"));
 
-            $user = $user->only([
-                "full_name",
-                "email",
-                "avatar"
-            ]);
-
-            return $this->sendResponse(["user_info" => $user]);
+            return $this->sendResponse($user->toUserDataApp(false));
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 
@@ -150,11 +138,7 @@ class UserController extends BaseController
 
                 $userToken = $user->createToken("personal access token");
 
-                $user = $user->only([
-                    "full_name",
-                    "email",
-                    "avatar"
-                ]);
+                $user = $user->toUserDataApp(false);
 
                 if (!empty($user['avatar'])
                     && !filter_var($user['avatar'], FILTER_VALIDATE_URL)
@@ -287,21 +271,40 @@ class UserController extends BaseController
             $validator = Validator::make($request->all(), [
                 "full_name" => ["required", "max:" . config("generate.max_length")],
                 "avatar"    => ["nullable", "url"],
+                "date_of_birth" => [
+                    "nullable",
+                    "integer",
+                    "date_format:U",
+                    "before_or_equal:" .Carbon::now()->subYears(13)->timestamp,
+                ],
             ], [
                 "*.required" => "This field is required",
-                "*.*"        => "This field is invalid"
+                "avatar.url" => "This field is invalid",
+                "full_name.max" => "The :attribute only accept " . config("generate.max_length") . " character",
+                "date_of_birth.integer" => "The :attribute must be a valid timestamp.",
+                "date_format" => "The :attribute must be a valid timestamp.",
+                "before_or_equal" => "The :attribute must be before 13 years ago.",
             ]);
 
             if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
 
             $dataUpdate = [
                 "full_name" => $request->get("full_name"),
-                "avatar"    => $request->get("avatar"),
             ];
 
-            $update = $this->userService->updateInfoById($dataUpdate, $user->id);
+            if($request->get("avatar") != null)
+            {
+                $dataUpdate["avatar"] = $request->get("avatar");
+            }
 
-            return $this->sendResponse($update, "Update user Success");
+            if($request->get("date_of_birth") != null)
+            {
+                $dataUpdate["date_of_birth"] = Carbon::createFromTimestamp($request->get("date_of_birth"))->toDateString();
+            }
+
+            $updateUser = $this->userService->updateInfoById($dataUpdate, $user->id);
+
+            return $this->sendResponse($updateUser->toUserDataApp(), "Update user Success");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 
@@ -381,7 +384,6 @@ class UserController extends BaseController
                 Storage::delete($user->avatar);
             }
 
-
             $data = [
                 "avatar" => $filePath
             ];
@@ -396,7 +398,7 @@ class UserController extends BaseController
 
             $updateUser -> avatar = getUrlStorageFile($updateUser -> avatar);
 
-            return $this->sendResponse(["user_info" => $updateUser], "Update Avatar Successfully");
+            return $this->sendResponse($updateUser->toUserDataApp(), "Update Avatar Successfully");
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
 

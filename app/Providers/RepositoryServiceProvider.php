@@ -12,6 +12,8 @@ use App\Repositories\Product\ProductInterface;
 use App\Repositories\Product\ProductRepository;
 use App\Repositories\User\UserInterface;
 use App\Repositories\User\UserRepository;
+use App\Repositories\Review\ReviewInterface;
+use App\Repositories\Review\ReviewRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -28,6 +30,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CategoryInterface::class, CategoryRepository::class);
         $this->app->bind(ProductInterface::class, ProductRepository::class);
         $this->app->bind(BannerInterface::class, BannerRepository::class);
+        $this->app->bind(ReviewInterface::class, ReviewRepository::class);
     }
 
     /**
