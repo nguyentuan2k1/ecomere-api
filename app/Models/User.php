@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -51,8 +50,9 @@ class User extends Authenticatable
 
     public function getDOBAttribute()
     {
-        $dateOfBirth = Carbon::parse($this->attributes['date_of_birth'] ?? null);
-        return $dateOfBirth ? $dateOfBirth->format('d/m/Y') : "";
+        if (empty($this->attributes['date_of_birth'])) return "";
+
+        return Carbon::parse($this->attributes['date_of_birth'])->format('d/m/Y');
     }
 
     public function toUserDataApp($isNeedFormatAvatar = true){
