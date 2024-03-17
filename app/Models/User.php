@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
     ];
 
     /**
@@ -45,7 +46,7 @@ class User extends Authenticatable
 
     public function getAvatarAttribute()
     {
-        return getFileInStorage($this->attributes['avatar'] ?? "");
+        return getUrlStorageFile($this->attributes['avatar'] ?? "");
     }
 
     public function getDOBAttribute()
