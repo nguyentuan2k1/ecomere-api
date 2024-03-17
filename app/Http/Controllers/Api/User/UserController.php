@@ -274,17 +274,14 @@ class UserController extends BaseController
                 "avatar"    => ["nullable", "url"],
                 "date_of_birth" => [
                     "nullable",
-                    "integer",
-                    "date_format:U",
-                    "before_or_equal:" .Carbon::now()->subYears(13)->timestamp,
+                    "date_format:d/m/Y",
+                    "before_or_equal: -13 years",
                 ],
             ], [
                 "*.required" => "This field is required",
                 "avatar.url" => "This field is invalid",
                 "full_name.max" => "The :attribute only accept " . config("generate.max_length") . " character",
-                "date_of_birth.integer" => "The :attribute must be a valid timestamp.",
-                "date_format" => "The :attribute must be a valid timestamp.",
-                "before_or_equal" => "The :attribute must be before 13 years ago.",
+                "date_of_birth.before_or_equal" => "The :attribute must be before 13 years ago.",
             ]);
 
             if ($validator->fails()) return $this->sendValidator($validator->errors()->toArray());
@@ -300,7 +297,7 @@ class UserController extends BaseController
 
             if($request->get("date_of_birth") != null)
             {
-                $dataUpdate["date_of_birth"] = Carbon::createFromTimestamp($request->get("date_of_birth"))->toDateString();
+                $dataUpdate["date_of_birth"] = Carbon::createFromFormat("d/m/Y", $request->get("date_of_birth"))->timestamp;
             }
 
             $updateUser = $this->userService->updateInfoById($dataUpdate, $user->id);
