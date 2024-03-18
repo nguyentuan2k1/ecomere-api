@@ -32,4 +32,14 @@ class ReviewService
     {
         return $this->reviewRepository->getProductReviews($product_id, $params);
     }
+
+    /**
+     * Get product reviews
+     * @param int $product_id, $user_id
+     * @return mixed
+     */
+    public function helpfulReview($product_id, $user_id)
+    {
+        return $this->reviewRepository->helpfulReview($product_id, $user_id);
+    }
 }

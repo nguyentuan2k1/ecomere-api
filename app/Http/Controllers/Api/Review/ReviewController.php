@@ -83,4 +83,20 @@ class ReviewController extends BaseController
             return $this->sendError("Have an error. Please try again", 500);
         }
     }
+
+    public function helpfulReview(Request $request)
+    {
+        try {
+            $user     = auth()->guard("api")->user();
+            $reviewId = $request->get("review_id");
+
+            $helpfulReview = $this->reviewService->helpfulReview($reviewId, $user->id);
+
+            return $this->sendResponse(empty($helpfulReview));
+        } catch (\Exception $exception) {
+            Log::error("{$exception->getMessage()}- Line: {$exception->getLine()} - File: {$exception->getFile()}");
+
+            return $this->sendError("Have an error. Please try again", 500);
+        }
+    }
 }
