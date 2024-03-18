@@ -45,4 +45,5 @@ Route::prefix("review")->middleware(["checkAuthApi"])->group(function () {
     Route::get("get-product-rating", [ReviewController::class, 'getProductRating']);
     Route::get("get-product-review", [ReviewController::class, 'getProductReviews']);
     Route::post("helpful-review", [ReviewController::class, 'helpfulReview']);
+    Route::post("send-review", [ReviewController::class, 'sendReview']);
 });

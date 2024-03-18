@@ -4,6 +4,7 @@ namespace App\Repositories\Review;
 
 use App\Models\Review;
 use App\Models\ReviewHelpful;
+use App\Models\User;
 
 class ReviewRepository implements ReviewInterface
 {
@@ -39,7 +40,11 @@ class ReviewRepository implements ReviewInterface
         return $reviews->paginate($params['limit'], ['*'], 'page', $params['page']);
     }
 
-
+    /**
+     * helpfulReview
+     * @param int $review_id , $user_id
+     * @return mixed
+     */
     public function helpfulReview($review_id, $user_id)
     {
         $helpfulReview = ReviewHelpful::query()
@@ -58,6 +63,27 @@ class ReviewRepository implements ReviewInterface
         ])->save();
 
         return null;
+    }
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    public function sendReview($data)
+    {
+        $review = new Review();
+
+        foreach ($data as $field => $value) {
+            $review->$field = $value;
+        }
+
+        $review->save();
+
+        $review->user;
+
+        $review->is_helpful = false;
+
+        return $review;
     }
 }
 
