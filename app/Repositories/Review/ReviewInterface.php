@@ -9,4 +9,6 @@ interface ReviewInterface
     public function getProductReviews($product_id, $params = []);
 
     public function helpfulReview($review_id, $user_id);
+
+    public function sendReview($data);
 }

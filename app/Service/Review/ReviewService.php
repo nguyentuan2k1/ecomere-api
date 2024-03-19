@@ -42,4 +42,14 @@ class ReviewService
     {
         return $this->reviewRepository->helpfulReview($product_id, $user_id);
     }
+
+    /**
+     * Send review
+     * @param array $data
+     * @return mixed
+     */
+    public function sendReview($data)
+    {
+        return $this->reviewRepository->sendReview($data);
+    }
 }
