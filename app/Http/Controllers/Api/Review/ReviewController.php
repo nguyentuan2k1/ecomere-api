@@ -116,15 +116,15 @@ class ReviewController extends BaseController
             $data['user_id'] = $user->id;
             $data['product_id'] = $request->get("product_id");
             $data['rating'] = $request->get("rating");
-            $data['images'] = [];
             if (empty($data['product_id'])) return $this->sendError("Product id is required", 400);
             if (!intval($data['product_id'])) return $this->sendError("Product id must be number", 400);
             if (intval($data['product_id']) < 1) return $this->sendError("Product id must be positive number", 400);
-
+            $data['product_id'] = intval($data['product_id']);
 
             if (empty($data['rating'])) return $this->sendError("Rating is required", 400);
             if (!intval($data['rating'])) return $this->sendError("Rating must be number", 400);
             if (intval($data['rating']) < 1) return $this->sendError("Rating must be positive number", 400);
+            $data['rating'] = intval($data['rating']);
 
             if (!empty($request->get("content"))) $data['content'] = $request->get("content");
 
