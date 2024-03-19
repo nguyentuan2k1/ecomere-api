@@ -54,6 +54,7 @@ class ReviewRepository implements ReviewInterface
 
         if (!empty($helpfulReview)) {
             $helpfulReview->delete();
+
             return $helpfulReview;
         }
 
@@ -81,7 +82,7 @@ class ReviewRepository implements ReviewInterface
 
         $review->user;
 
-        $review->is_helpful = false;
+        $review->is_helpful = empty($data['is_helpful']) ? false : $data['is_helpful'];
 
         return $review;
     }

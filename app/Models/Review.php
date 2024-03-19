@@ -51,7 +51,17 @@ class Review extends Model
             $image[$key] = getUrlStorageFile($value);
         }
 
-        $this->final_images = $image;
+        return $image;
+    }
+
+    public function getUpdatedAtAttribute()
+    {
+        return date("d/m/Y", strtotime($this->attributes['updated_at']));
+    }
+
+    public function getCreatedAtAttribute()
+    {
+        return date("d/m/Y", strtotime($this->attributes['created_at']));
     }
 
     public function mapping($isNeedMappingIsHelpful = true)
@@ -59,7 +69,13 @@ class Review extends Model
         if ($isNeedMappingIsHelpful) {
             $this->getIsHelpfulAttribute();
         }
+
         $this->user->getAvatarAttribute();
+
         $this->getImagesAttribute();
+
+        $this->getUpdatedAtAttribute();
+
+        $this->getCreatedAtAttribute();
     }
 }

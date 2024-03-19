@@ -94,7 +94,7 @@ class ReviewController extends BaseController
     public function helpfulReview(Request $request)
     {
         try {
-            $user = auth()->guard("api")->user();
+            $user     = auth()->guard("api")->user();
             $reviewId = $request->get("review_id");
 
             $helpfulReview = $this->reviewService->helpfulReview($reviewId, $user->id);
@@ -112,18 +112,25 @@ class ReviewController extends BaseController
         try {
             $data = [];
 
-            $user = auth()->guard("api")->user();
-            $data['user_id'] = $user->id;
+            $user               = auth()->guard("api")->user();
+            $data['user_id']    = $user->id;
             $data['product_id'] = $request->get("product_id");
-            $data['rating'] = $request->get("rating");
+            $data['rating']     = $request->get("rating");
+
             if (empty($data['product_id'])) return $this->sendError("Product id is required", 400);
+
             if (!intval($data['product_id'])) return $this->sendError("Product id must be number", 400);
+
             if (intval($data['product_id']) < 1) return $this->sendError("Product id must be positive number", 400);
+
             $data['product_id'] = intval($data['product_id']);
 
             if (empty($data['rating'])) return $this->sendError("Rating is required", 400);
+
             if (!intval($data['rating'])) return $this->sendError("Rating must be number", 400);
+
             if (intval($data['rating']) < 1) return $this->sendError("Rating must be positive number", 400);
+
             $data['rating'] = intval($data['rating']);
 
             if (!empty($request->get("content"))) $data['content'] = $request->get("content");
@@ -131,21 +138,23 @@ class ReviewController extends BaseController
             if (Str::length($data['content']) > 255) return $this->sendError("Content must be <= 255 characters", 400);
 
             if ($request->hasFile("images")) {
-                $image = $request->file("images");
                 $typeFileAccepts = config("generate.file_type_accept.image");
 
-                if (!in_array($image->getClientOriginalExtension(), $typeFileAccepts)) return $this->sendError("Image type is not accept", 400);
-                if ($image->getSize() > 10 * 1024 * 1024) return $this->sendError("Image size must be <= 10mb", 400);
+                foreach ($request->file("images") as $image) {
+                    if (!in_array($image->getClientOriginalExtension(), $typeFileAccepts)) return $this->sendError("Image type is not accept", 400);
 
-                $file = $image->getClientOriginalName();
-                $filename = pathinfo($file, PATHINFO_FILENAME);
-                $extension = pathinfo($file, PATHINFO_EXTENSION);
-                $filename = Str::slug($filename) . "-" . time() . "." . $extension;
-                $filePath = $this->uploadFileService->uploadFile($image, $filename, config("generate.file_storage_directory.image"));
+                    if ($image->getSize() > 10 * 1024 * 1024) return $this->sendError("Image size must be <= 10mb", 400);
 
-                if (empty($filePath)) return $this->sendError("Can not upload your image", 400);
+                    $file      = $image->getClientOriginalName();
+                    $filename  = pathinfo($file, PATHINFO_FILENAME);
+                    $extension = pathinfo($file, PATHINFO_EXTENSION);
+                    $filename  = Str::slug($filename) . "-" . time() . "." . $extension;
+                    $filePath  = $this->uploadFileService->uploadFile($image, $filename, config("generate.file_storage_directory.image"));
 
-                $data['images'][] = $filePath;
+                    if (empty($filePath)) return $this->sendError("Can not upload your image", 400);
+
+                    $data['images'][] = $filePath;
+                }
             }
 
             if (!empty($data['images'])) {

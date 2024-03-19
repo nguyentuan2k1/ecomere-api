@@ -40,6 +40,6 @@ return [
 
     "file_type_accept" => [
         "avatar" => ["jpg", "png", "jpeg", "svg"],
-        "image" => ["jpg", "png", "jpeg", "svg"]
+        "image" => ["jpg", "png", "jpeg"]
     ]
 ];
