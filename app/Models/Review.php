@@ -24,9 +24,6 @@ class Review extends Model
         "updated_at",
     ];
 
-    protected $casts = [
-        'images' => 'array',
-    ];
 
     public function user()
     {
