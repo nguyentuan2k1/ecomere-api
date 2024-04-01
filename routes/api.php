@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Banner\BannerController;
+use App\Http\Controllers\Api\Brand\BrandController;
 use App\Http\Controllers\Api\Category\CategoryController;
+use App\Http\Controllers\Api\Product\ProductController;
 use App\Http\Controllers\Api\Review\ReviewController;
 use App\Http\Controllers\Api\User\UserController;
 use Illuminate\Http\Request;
@@ -47,3 +49,6 @@ Route::prefix("review")->middleware(["checkAuthApi"])->group(function () {
     Route::post("helpful-review", [ReviewController::class, 'helpfulReview']);
     Route::post("send-review", [ReviewController::class, 'sendReview']);
 });
+
+Route::get("prod", [ProductController::class, "getProd"]);
+Route::get("get-brand", [BrandController::class, "getBrand"]);

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\BaseController;
-use App\Http\Middleware\TrustHosts;
 use App\Service\PasswordReset\PasswordResetService;
 use App\Service\UploadFile\UploadFileService;
 use App\Service\User\UserService;
@@ -393,6 +392,8 @@ class UserController extends BaseController
 
                 return $this->sendError("Update Avatar Failed");
             }
+
+            $updateUser -> avatar = getUrlStorageFile($updateUser -> avatar);
 
             return $this->sendResponse($updateUser->toUserDataApp(), "Update Avatar Successfully");
         } catch (Exception $exception) {

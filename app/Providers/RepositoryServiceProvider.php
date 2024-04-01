@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Repositories\Banner\BannerInterface;
 use App\Repositories\Banner\BannerRepository;
+use App\Repositories\Brand\BrandInterface;
+use App\Repositories\Brand\BrandRepository;
 use App\Repositories\Category\CategoryInterface;
 use App\Repositories\Category\CategoryRepository;
 use App\Repositories\PasswordReset\PasswordResetInterface;
@@ -31,6 +33,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ProductInterface::class, ProductRepository::class);
         $this->app->bind(BannerInterface::class, BannerRepository::class);
         $this->app->bind(ReviewInterface::class, ReviewRepository::class);
+        $this->app->bind(BrandInterface::class, BrandRepository::class);
     }
 
     /**

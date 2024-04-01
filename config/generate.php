@@ -41,5 +41,8 @@ return [
     "file_type_accept" => [
         "avatar" => ["jpg", "png", "jpeg", "svg"],
         "image" => ["jpg", "png", "jpeg"]
-    ]
+    ],
+
+    "timezone_vietnam"    => "+07:00",
+    "default_format_date" => "d/m/Y",
 ];
