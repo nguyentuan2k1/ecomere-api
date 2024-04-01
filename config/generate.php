@@ -23,6 +23,7 @@ return [
 
     "file_storage_directory" => [
         "avatar" => "public/avatar",
+        "image"  => "public/image",
     ],
 
     "social_accepts" => [
@@ -39,5 +40,6 @@ return [
 
     "file_type_accept" => [
         "avatar" => ["jpg", "png", "jpeg", "svg"],
+        "image" => ["jpg", "png", "jpeg"]
     ]
 ];
