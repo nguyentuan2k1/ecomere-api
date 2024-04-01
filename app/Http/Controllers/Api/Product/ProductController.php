@@ -26,8 +26,8 @@ class ProductController extends BaseController
                  $createdAt = timestampToDateApi($product->created_at);
                  $updatedAt = timestampToDateApi($product->updated_at);
 
-                 $product->created_at    = $createdAt ? $createdAt : Carbon::createFromTimestamp($product->created_at, config("generate.timezone_vietnam"))->format(config("generate.default_format_date"));
-                 $product->updated_at    = $updatedAt ? $updatedAt : Carbon::createFromTimestamp($product->updated_at, config("generate.timezone_vietnam"))->format(config("generate.default_format_date"));
+                 $product->created_at    = $createdAt ?? Carbon::createFromTimestamp($product->created_at, config("generate.timezone_vietnam"))->format(config("generate.default_format_date"));
+                 $product->updated_at    = $updatedAt ?? Carbon::createFromTimestamp($product->updated_at, config("generate.timezone_vietnam"))->format(config("generate.default_format_date"));
                  $product->price         = $product->variant_price ?? $product->price;
                  $product->sale_price    = $product->variant_sale_price ?? $product->sale_price;
                  $product->brand_name    = $product['brand']['name'];
@@ -57,6 +57,8 @@ class ProductController extends BaseController
             return $this->sendResponse($products);
         } catch (\Exception $exception) {
             Log::error("Api ProductController : {$exception->getMessage()} - {$exception->getFile()} - {$exception->getLine()}");
+
+            return $this->sendError($exception->getMessage());
         }
     }
 }

@@ -93,8 +93,8 @@ if (!function_exists("timestampToDateApi")) {
 
             return Carbon::createFromTimestamp($value, $timezone)->format($format);
         } catch (Exception $exception) {
-
             Log::error("Helper TimestampToDateApi : {$exception->getMessage()} - {$exception->getFile()} - {$exception->getLine()}");
+
             return false;
         }
     }
