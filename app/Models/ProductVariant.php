@@ -12,7 +12,7 @@ class ProductVariant extends Model
     protected $table      = "product_variant";
     protected $primaryKey = "id";
     public $incrementing  = true;
-    public $timestamps    = true;
+    public $timestamps    = false;
 
     protected $fillable = [
         "price",
@@ -24,14 +24,4 @@ class ProductVariant extends Model
         "active",
         "order",
     ];
-
-    public function setCreatedAt()
-    {
-        return Carbon::now()->timestamp;
-    }
-
-    public function setUpdatedAt()
-    {
-        return Carbon::now()->timestamp;
-    }
 }

@@ -24,7 +24,7 @@ return new class extends Migration
                 $table->integer("created_at");
                 $table->integer("updated_at");
                 $table->enum("active", ["Y", "N"]);
-                $table->text("image")->nullable();
+                $table->string("image", 255)->nullable();
             });
         }
     }

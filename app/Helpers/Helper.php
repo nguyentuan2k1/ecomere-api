@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -78,5 +79,23 @@ if (!function_exists("getFileInStorage")) {
         if (filter_var($file, FILTER_VALIDATE_URL)) return $file;
 
         return asset($file);
+    }
+}
+
+if (!function_exists("timestampToDateApi")) {
+    function timestampToDateApi($value, $format = null, $timezone = null) {
+        try {
+            if (empty($value)) return false;
+
+            if (empty($timezone)) $timezone = config("generate.timezone_vietnam");
+
+            if (empty($format)) $format = config("generate.default_format_date");
+
+            return Carbon::createFromTimestamp($value, $timezone)->format($format);
+        } catch (Exception $exception) {
+
+            Log::error("Helper TimestampToDateApi : {$exception->getMessage()} - {$exception->getFile()} - {$exception->getLine()}");
+            return false;
+        }
     }
 }

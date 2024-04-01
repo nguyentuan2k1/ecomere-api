@@ -11,6 +11,7 @@ class Brand extends Model
     use HasFactory;
     protected $table      = "brands";
     protected $primaryKey = "id";
+    public $timestamps    = false;
     public $incrementing  = true;
 
     protected $fillable = [
@@ -20,14 +21,4 @@ class Brand extends Model
         "created_at",
         "updated_at",
     ];
-
-    public function setCreatedAt()
-    {
-        return Carbon::now()->timestamp;
-    }
-
-    public function setUpdatedAt()
-    {
-        return Carbon::now()->timestamp;
-    }
 }
