@@ -6,5 +6,5 @@ interface ProductInterface
 {
     public function create($data = []);
 
-    public function getProd($params = []);
+    public function getProduct($params = []);
 }

@@ -50,5 +50,5 @@ Route::prefix("review")->middleware(["checkAuthApi"])->group(function () {
     Route::post("send-review", [ReviewController::class, 'sendReview']);
 });
 
-Route::get("prod", [ProductController::class, "getProd"]);
+Route::get("get-product", [ProductController::class, "getProduct"]);
 Route::get("get-brand", [BrandController::class, "getBrand"]);

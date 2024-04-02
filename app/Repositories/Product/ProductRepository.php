@@ -33,15 +33,20 @@ class ProductRepository implements ProductInterface
     }
 
     /**
-     * Get prod
+     * Get product
      * @param array $params
-     * @return bool|\Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     * @return false|\Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function getProd($params = [])
+    public function getProduct($params = [])
     {
         try {
             $query = Product::query()->with(['brand', 'category']);
-            $query = $query->join('product_variant', "product_variant.product_id", "products.id" );
+            $query = $query->join('product_variant', "product_variant.product_id", "products.id" )
+                ->where([
+                    ["product_variant.active", "Y"],
+                ])
+                ->whereNull("product_variant.product_parent");
+
             $query = $query->select([
                 "products.*",
                 "product_variant.id as variant_id",
@@ -50,17 +55,27 @@ class ProductRepository implements ProductInterface
                 "product_variant.image as variant_image",
             ]);
 
-//            if (!empty($params['brand'])) $query = $query->whereIn()
+            if (!empty($params['brand'])) $query = $query->whereIn("brand_id", [$params['brand']]);
 
-            if (!empty($params['filter'])) {
-                // price : Lower to high
-//                $query = $query->orderBy("product_variant.sale_price", "ASC")->orderBy("product_variant.price", "ASC");
-                // price : high to lower
-//                $query = $query->orderBy("product_variant.sale_price", "DESC")->orderBy("product_variant.price", "DESC");
-                // newest
-//                $query = $query->orderBy("id", "DESC");
-                // customer review
-//                $query = $query->orderBy("products.rating", "DESC");
+            if (!empty($params['sort'])) {
+                switch ($params['sort']) {
+                    case 1:
+                        // popular đang theo mặc định
+                        $query = $query->orderBy("id", "DESC");
+                        break;
+                    case 2:
+                        $query = $query->orderBy("id", "DESC");
+                        break;
+                    case 3:
+                        $query = $query->orderBy("products.rating", "DESC");
+                        break;
+                    case 4:
+                        $query = $query->orderBy("product_variant.sale_price", "ASC")->orderBy("product_variant.price", "ASC");
+                        break;
+                    case 5:
+                        $query = $query->orderBy("product_variant.sale_price", "DESC")->orderBy("product_variant.price", "DESC");
+                        break;
+                }
             } else {
                 $query = $query->orderBy("id", "DESC");
             }

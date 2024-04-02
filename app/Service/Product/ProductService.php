@@ -18,8 +18,8 @@ class ProductService
         return $this->productRepository->create($data);
     }
 
-    public function getProd($params = [])
+    public function getProduct($params = [])
     {
-        return $this->productRepository->getProd($params);
+        return $this->productRepository->getProduct($params);
     }
 }

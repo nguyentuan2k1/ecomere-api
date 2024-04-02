@@ -17,10 +17,10 @@ class ProductController extends BaseController
         $this->productService = $productService;
     }
 
-    public function getProd(Request $request)
+    public function getProduct(Request $request)
     {
         try {
-            $products = $this->productService->getProd($request->all());
+            $products = $this->productService->getProduct($request->all());
 
              $products = collect($products)->map(function ($product) {
                  $createdAt = timestampToDateApi($product->created_at);

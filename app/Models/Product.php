@@ -36,9 +36,4 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
-
-    public function productVariant()
-    {
-        return $this->hasMany(ProductVariant::class, "product_id", 'id')->whereNull('product_parent');
-    }
 }
